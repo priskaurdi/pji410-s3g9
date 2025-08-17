@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confeitaria 3D - Experiência Imersiva</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            color: white;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: auto;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 400px;
+        }
+
+        .controls-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            pointer-events: auto;
+        }
+
+        .controls-info h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .iot-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 300px;
+            pointer-events: auto;
+            border: 2px solid #ffd700;
+        }
+
+        .iot-panel h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .sensor-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        .sensor-value {
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .status-good { color: #4ade80; }
+        .status-warning { color: #fbbf24; }
+        .status-critical { color: #ef4444; }
+
+        .menu-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: none;
+            pointer-events: auto;
+            border: 3px solid #ffd700;
+        }
+
+        .menu-modal.active {
+            display: block;
+        }
+
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,215,0,0.2);
+            transform: translateX(5px);
+        }
+
+        .menu-item h4 {
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .menu-item p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .tech-stack {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            pointer-events: auto;
+            max-width: 250px;
+        }
+
+        .tech-stack h4 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .tech-item {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+
+        .interaction-hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,215,0,0.9);
+            color: black;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .cart-panel {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 280px;
+            pointer-events: auto;
+            border: 2px solid #4ade80;
+            display: none;
+        }
+
+        .cart-panel.active {
+            display: block;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+
+        .cart-total {
+            border-top: 2px solid #4ade80;
+            padding-top: 15px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #4ade80;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            background: #22c55e;
+            transform: translateY(-2px);
+        }
+
+        .checkout-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            display: none;
+            pointer-events: auto;
+            border: 3px solid #4ade80;
+        }
+
+        .checkout-modal.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #4ade80;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .payment-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .payment-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #4ade80;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .payment-option.selected {
+            background: #4ade80;
+            color: black;
+        }
+
+        .success-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            display: none;
+            pointer-events: auto;
+            border: 3px solid #4ade80;
+        }
+
+        .success-modal.active {
+            display: block;
+        }
+
+        .pickup-code {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+            background: rgba(255,215,0,0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            letter-spacing: 3px;
+        }
+
+        .navigation-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            pointer-events: auto;
+            text-align: center;
+        }
+
+        .wasd-keys {
+            display: grid;
+            grid-template-columns: repeat(3, 40px);
+            gap: 5px;
+            margin: 10px auto;
+            justify-content: center;
+        }
+
+        .key {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid #ffd700;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .key.pressed {
+            background: #ffd700;
+            color: black;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top: 5px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container"></div>
+        
+        <div class="ui-overlay">
+            <div class="header">
+                <h1>🧁 Confeitaria 3D</h1>
+                <p>Explore nossa loja virtual e descubra como a tecnologia 3D revoluciona a experiência de compra de bolos</p>
+            </div>
+
+            <div class="navigation-controls">
+                <h3 style="color: #ffd700; margin-bottom: 10px;">🎮 Navegação</h3>
+                <p style="margin-bottom: 10px;">Use WASD ou clique e arraste</p>
+                <div class="wasd-keys">
+                    <div></div>
+                    <div class="key" id="key-w">W</div>
+                    <div></div>
+                    <div class="key" id="key-a">A</div>
+                    <div class="key" id="key-s">S</div>
+                    <div class="key" id="key-d">D</div>
+                </div>
+                <p style="font-size: 0.9rem; opacity: 0.8;">Clique nos bolos para ver detalhes</p>
+            </div>
+
+            <div class="iot-panel">
+                <h3>📊 Painel IoT - Tempo Real</h3>
+                <div class="sensor-item">
+                    <span>🌡️ Temperatura Estufa:</span>
+                    <span class="sensor-value status-good" id="temp-oven">180°C</span>
+                </div>
+                <div class="sensor-item">
+                    <span>❄️ Vitrine Refrigerada:</span>
+                    <span class="sensor-value status-good" id="temp-fridge">4°C</span>
+                </div>
+                <div class="sensor-item">
+                    <span>📦 Estoque Farinha:</span>
+                    <span class="sensor-value status-warning" id="stock-flour">25kg</span>
+                </div>
+                <div class="sensor-item">
+                    <span>🥚 Estoque Ovos:</span>
+                    <span class="sensor-value status-good" id="stock-eggs">120 unid.</span>
+                </div>
+                <div class="sensor-item">
+                    <span>⏱️ Pedidos em Produção:</span>
+                    <span class="sensor-value status-good" id="orders">3</span>
+                </div>
+                <div class="sensor-item">
+                    <span>🚀 Status Sistema:</span>
+                    <span class="sensor-value status-good">Online</span>
+                </div>
+            </div>
+
+            <div class="tech-stack">
+                <h4>💻 Stack Tecnológica</h4>
+                <div class="tech-item">⚛️ React + Three.js</div>
+                <div class="tech-item">🐍 Django Backend</div>
+                <div class="tech-item">🗄️ PostgreSQL</div>
+                <div class="tech-item">🌐 IoT API Integration</div>
+                <div class="tech-item">☁️ AWS/Vercel Deploy</div>
+            </div>
+
+            <div class="interaction-hint" id="interaction-hint">
+                👆 Clique nos bolos para ver o cardápio!
+            </div>
+
+            <div class="cart-panel" id="cart-panel">
+                <h3 style="color: #4ade80; text-align: center; margin-bottom: 15px;">🛒 Carrinho</h3>
+                <div id="cart-items"></div>
+                <div class="cart-total">
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #4ade80;">
+                        Total: R$ <span id="cart-total">0,00</span>
+                    </div>
+                    <button class="checkout-btn" onclick="openCheckout()">Finalizar Pedido</button>
+                    <button class="checkout-btn" style="background: #ef4444; margin-top: 5px;" onclick="clearCart()">Limpar Carrinho</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-modal" id="menu-modal">
+            <button class="close-btn" onclick="closeMenu()">&times;</button>
+            <h2 style="color: #ffd700; text-align: center; margin-bottom: 20px;">🍰 Cardápio Digital</h2>
+            
+            <div class="menu-item" onclick="addToCart('Bolo de Chocolate Premium', 89.90)">
+                <div>
+                    <h4>🍫 Bolo de Chocolate Premium</h4>
+                    <p>Massa de chocolate belga com ganache e morangos frescos</p>
+                </div>
+                <div class="price">R$ 89,90</div>
+            </div>
+
+            <div class="menu-item" onclick="addToCart('Bolo Red Velvet', 79.90)">
+                <div>
+                    <h4>❤️ Bolo Red Velvet</h4>
+                    <p>Clássico americano com cream cheese e toque de baunilha</p>
+                </div>
+                <div class="price">R$ 79,90</div>
+            </div>
+
+            <div class="menu-item" onclick="addToCart('Bolo de Limão Siciliano', 69.90)">
+                <div>
+                    <h4>🍋 Bolo de Limão Siciliano</h4>
+                    <p>Massa aerada com cobertura de limão e raspas cítricas</p>
+                </div>
+                <div class="price">R$ 69,90</div>
+            </div>
+
+            <div class="menu-item" onclick="addToCart('Bolo Floresta Negra', 94.90)">
+                <div>
+                    <h4>🌲 Bolo Floresta Negra</h4>
+                    <p>Chocolate, cerejas e chantilly em camadas perfeitas</p>
+                </div>
+                <div class="price">R$ 94,90</div>
+            </div>
+
+            <div class="menu-item" onclick="addToCart('Cheesecake de Frutas Vermelhas', 84.90)">
+                <div>
+                    <h4>🍓 Cheesecake Frutas Vermelhas</h4>
+                    <p>Cremoso cheesecake com calda de frutas vermelhas</p>
+                </div>
+                <div class="price">R$ 84,90</div>
+            </div>
+        </div>
+
+        <div class="checkout-modal" id="checkout-modal">
+            <button class="close-btn" onclick="closeCheckout()">&times;</button>
+            <h2 style="color: #4ade80; text-align: center; margin-bottom: 30px;">💳 Finalizar Pedido</h2>
+            
+            <div class="form-group">
+                <label>Nome Completo:</label>
+                <input type="text" id="customer-name" placeholder="Digite seu nome completo" required>
+            </div>
+
+            <div class="form-group">
+                <label>Telefone:</label>
+                <input type="tel" id="customer-phone" placeholder="(11) 99999-9999" required>
+            </div>
+
+            <div class="form-group">
+                <label>Horário de Retirada:</label>
+                <select id="pickup-time" required>
+                    <option value="">Selecione o horário</option>
+                    <option value="30min">Em 30 minutos</option>
+                    <option value="1h">Em 1 hora</option>
+                    <option value="2h">Em 2 horas</option>
+                    <option value="4h">Em 4 horas</option>
+                    <option value="amanha">Amanhã</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Forma de Pagamento:</label>
+                <div class="payment-options">
+                    <div class="payment-option" onclick="selectPayment('pix')">
+                        <div>📱 PIX</div>
+                        <small>Instantâneo</small>
+                    </div>
+                    <div class="payment-option" onclick="selectPayment('card')">
+                        <div>💳 Cartão</div>
+                        <small>Débito/Crédito</small>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <div style="font-size: 1.3rem; font-weight: bold; color: #4ade80; margin-bottom: 20px;">
+                    Total: R$ <span id="checkout-total">0,00</span>
+                </div>
+                <button class="checkout-btn" onclick="processOrder()" style="font-size: 1.1rem; padding: 15px;">
+                    🚀 Confirmar Pedido
+                </button>
+            </div>
+        </div>
+
+        <div class="success-modal" id="success-modal">
+            <h2 style="color: #4ade80; margin-bottom: 20px;">✅ Pedido Confirmado!</h2>
+            <p style="margin-bottom: 20px;">Seu pedido foi processado com sucesso!</p>
+            
+            <div class="pickup-code" id="pickup-code">ABC123</div>
+            
+            <p style="margin-bottom: 20px;">
+                <strong>Código de Retirada:</strong><br>
+                Apresente este código na loja para retirar seu pedido
+            </p>
+            
+            <div style="background: rgba(255,215,0,0.2); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <p><strong>⏰ Tempo Estimado:</strong> <span id="estimated-time">30 minutos</span></p>
+                <p><strong>📍 Endereço:</strong> Rua das Delícias, 123 - Centro</p>
+                <p><strong>📞 Contato:</strong> (11) 99999-9999</p>
+            </div>
+            
+            <button class="checkout-btn" onclick="closeSuccess()">Fechar</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Carregando experiência 3D...</p>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, controls;
+        let cakes = [];
+        let isLoaded = false;
+        let cart = [];
+        let selectedPayment = '';
+        let keys = { w: false, a: false, s: false, d: false };
+
+        // Inicialização da cena 3D
+        function init() {
+            // Cena
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+
+            // Câmera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 5, 10);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Controles
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2;
+
+            // Iluminação
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 10, 5);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+
+            // Criar ambiente da confeitaria
+            createBakeryEnvironment();
+            
+            // Raycaster para interações
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            renderer.domElement.addEventListener('click', (event) => {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(cakes);
+
+                if (intersects.length > 0) {
+                    openMenu();
+                    document.getElementById('interaction-hint').style.display = 'none';
+                }
+            });
+
+            // Controles WASD
+            document.addEventListener('keydown', (event) => {
+                const key = event.key.toLowerCase();
+                if (keys.hasOwnProperty(key)) {
+                    keys[key] = true;
+                    document.getElementById(`key-${key}`).classList.add('pressed');
+                }
+            });
+
+            document.addEventListener('keyup', (event) => {
+                const key = event.key.toLowerCase();
+                if (keys.hasOwnProperty(key)) {
+                    keys[key] = false;
+                    document.getElementById(`key-${key}`).classList.remove('pressed');
+                }
+            });
+
+            // Animação
+            animate();
+            
+            // Simular dados IoT
+            startIoTSimulation();
+
+            // Esconder loading
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                isLoaded = true;
+            }, 2000);
+        }
+
+        function createBakeryEnvironment() {
+            // Chão
+            const floorGeometry = new THREE.PlaneGeometry(20, 20);
+            const floorMaterial = new THREE.MeshLambertMaterial({ color: 0xf0f0f0 });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            // Balcão
+            const counterGeometry = new THREE.BoxGeometry(6, 1, 2);
+            const counterMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            const counter = new THREE.Mesh(counterGeometry, counterMaterial);
+            counter.position.set(0, 0.5, -3);
+            counter.castShadow = true;
+            scene.add(counter);
+
+            // Vitrine
+            const vitrineGeometry = new THREE.BoxGeometry(5, 1.5, 1.5);
+            const vitrineMaterial = new THREE.MeshPhysicalMaterial({ 
+                color: 0xffffff, 
+                transparent: true, 
+                opacity: 0.3,
+                roughness: 0.1,
+                metalness: 0.1
+            });
+            const vitrine = new THREE.Mesh(vitrineGeometry, vitrineMaterial);
+            vitrine.position.set(0, 0.75, -2);
+            scene.add(vitrine);
+
+            // Bolos na vitrine
+            createCakes();
+
+            // Prateleiras nas paredes
+            createShelves();
+
+            // Decorações
+            createDecorations();
+        }
+
+        function createCakes() {
+            const cakePositions = [
+                { x: -1.5, y: 1.2, z: -2 },
+                { x: 0, y: 1.2, z: -2 },
+                { x: 1.5, y: 1.2, z: -2 }
+            ];
+
+            const cakeColors = [0x8B4513, 0xFF6B6B, 0xFFD93D];
+
+            cakePositions.forEach((pos, index) => {
+                // Base do bolo
+                const baseGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
+                const baseMaterial = new THREE.MeshLambertMaterial({ color: cakeColors[index] });
+                const base = new THREE.Mesh(baseGeometry, baseMaterial);
+                base.position.set(pos.x, pos.y, pos.z);
+                base.castShadow = true;
+                scene.add(base);
+                cakes.push(base);
+
+                // Cobertura
+                const toppingGeometry = new THREE.CylinderGeometry(0.35, 0.35, 0.1, 16);
+                const toppingMaterial = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+                const topping = new THREE.Mesh(toppingGeometry, toppingMaterial);
+                topping.position.set(pos.x, pos.y + 0.2, pos.z);
+                scene.add(topping);
+
+                // Cereja no topo
+                const cherryGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+                const cherryMaterial = new THREE.MeshLambertMaterial({ color: 0xFF0000 });
+                const cherry = new THREE.Mesh(cherryGeometry, cherryMaterial);
+                cherry.position.set(pos.x, pos.y + 0.3, pos.z);
+                scene.add(cherry);
+            });
+        }
+
+        function createShelves() {
+            // Prateleira esquerda
+            const shelfGeometry = new THREE.BoxGeometry(0.2, 3, 1);
+            const shelfMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
+            
+            const leftShelf = new THREE.Mesh(shelfGeometry, shelfMaterial);
+            leftShelf.position.set(-8, 1.5, 0);
+            scene.add(leftShelf);
+
+            // Prateleira direita
+            const rightShelf = new THREE.Mesh(shelfGeometry, shelfMaterial);
+            rightShelf.position.set(8, 1.5, 0);
+            scene.add(rightShelf);
+        }
+
+        function createDecorations() {
+            // Plantas decorativas
+            for (let i = 0; i < 4; i++) {
+                const potGeometry = new THREE.CylinderGeometry(0.2, 0.15, 0.3, 8);
+                const potMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+                const pot = new THREE.Mesh(potGeometry, potMaterial);
+                
+                const angle = (i / 4) * Math.PI * 2;
+                pot.position.set(Math.cos(angle) * 7, 0.15, Math.sin(angle) * 7);
+                scene.add(pot);
+
+                // Folhas
+                const leafGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+                const leafMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+                const leaves = new THREE.Mesh(leafGeometry, leafMaterial);
+                leaves.position.set(pot.position.x, 0.5, pot.position.z);
+                scene.add(leaves);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (controls) {
+                controls.update();
+            }
+
+            // Movimento WASD da câmera
+            const moveSpeed = 0.1;
+            if (keys.w) {
+                camera.position.z -= moveSpeed;
+            }
+            if (keys.s) {
+                camera.position.z += moveSpeed;
+            }
+            if (keys.a) {
+                camera.position.x -= moveSpeed;
+            }
+            if (keys.d) {
+                camera.position.x += moveSpeed;
+            }
+
+            // Animação sutil dos bolos
+            cakes.forEach((cake, index) => {
+                cake.rotation.y += 0.005 * (index + 1);
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        function openMenu() {
+            document.getElementById('menu-modal').classList.add('active');
+        }
+
+        function closeMenu() {
+            document.getElementById('menu-modal').classList.remove('active');
+        }
+
+        function addToCart(itemName, price) {
+            const existingItem = cart.find(item => item.name === itemName);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    name: itemName,
+                    price: price,
+                    quantity: 1
+                });
+            }
+            
+            updateCartDisplay();
+            document.getElementById('cart-panel').classList.add('active');
+            closeMenu();
+            
+            // Simular atualização do IoT
+            setTimeout(() => {
+                const orders = document.getElementById('orders');
+                const currentOrders = parseInt(orders.textContent);
+                orders.textContent = currentOrders + 1;
+                orders.className = 'sensor-value ' + (currentOrders + 1 > 4 ? 'status-warning' : 'status-good');
+            }, 1000);
+        }
+
+        function updateCartDisplay() {
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            
+            cartItems.innerHTML = '';
+            let total = 0;
+            
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                cartItems.innerHTML += `
+                    <div class="cart-item">
+                        <div>
+                            <strong>${item.name}</strong><br>
+                            <small>R$ ${item.price.toFixed(2)} x ${item.quantity}</small>
+                        </div>
+                        <div>
+                            <div style="margin-bottom: 5px;">R$ ${itemTotal.toFixed(2)}</div>
+                            <button onclick="removeFromCart(${index})" style="background: #ef4444; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;">×</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            cartTotal.textContent = total.toFixed(2);
+            document.getElementById('checkout-total').textContent = total.toFixed(2);
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartDisplay();
+            
+            if (cart.length === 0) {
+                document.getElementById('cart-panel').classList.remove('active');
+            }
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCartDisplay();
+            document.getElementById('cart-panel').classList.remove('active');
+        }
+
+        function openCheckout() {
+            if (cart.length === 0) {
+                alert('Seu carrinho está vazio!');
+                return;
+            }
+            document.getElementById('checkout-modal').classList.add('active');
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkout-modal').classList.remove('active');
+        }
+
+        function selectPayment(method) {
+            selectedPayment = method;
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.target.closest('.payment-option').classList.add('selected');
+        }
+
+        function processOrder() {
+            const name = document.getElementById('customer-name').value;
+            const phone = document.getElementById('customer-phone').value;
+            const pickupTime = document.getElementById('pickup-time').value;
+            
+            if (!name || !phone || !pickupTime || !selectedPayment) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+            
+            // Gerar código de retirada
+            const pickupCode = 'CB' + Math.random().toString(36).substr(2, 4).toUpperCase();
+            document.getElementById('pickup-code').textContent = pickupCode;
+            
+            // Definir tempo estimado
+            const timeMap = {
+                '30min': '30 minutos',
+                '1h': '1 hora',
+                '2h': '2 horas',
+                '4h': '4 horas',
+                'amanha': 'Amanhã pela manhã'
+            };
+            document.getElementById('estimated-time').textContent = timeMap[pickupTime];
+            
+            // Fechar checkout e mostrar sucesso
+            closeCheckout();
+            document.getElementById('success-modal').classList.add('active');
+            
+            // Limpar carrinho
+            clearCart();
+            
+            // Simular integração IoT - aumentar pedidos em produção
+            setTimeout(() => {
+                const orders = document.getElementById('orders');
+                const currentOrders = parseInt(orders.textContent);
+                orders.textContent = currentOrders + cart.length;
+            }, 500);
+        }
+
+        function closeSuccess() {
+            document.getElementById('success-modal').classList.remove('active');
+            // Reset form
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-phone').value = '';
+            document.getElementById('pickup-time').value = '';
+            selectedPayment = '';
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+        }
+
+        function startIoTSimulation() {
+            setInterval(() => {
+                // Simular variações nos sensores
+                const tempOven = document.getElementById('temp-oven');
+                const tempFridge = document.getElementById('temp-fridge');
+                const stockFlour = document.getElementById('stock-flour');
+                const orders = document.getElementById('orders');
+
+                // Temperatura do forno (175-185°C)
+                const ovenTemp = 175 + Math.random() * 10;
+                tempOven.textContent = Math.round(ovenTemp) + '°C';
+                tempOven.className = 'sensor-value ' + (ovenTemp > 185 ? 'status-warning' : 'status-good');
+
+                // Temperatura da vitrine (2-6°C)
+                const fridgeTemp = 2 + Math.random() * 4;
+                tempFridge.textContent = Math.round(fridgeTemp) + '°C';
+                tempFridge.className = 'sensor-value ' + (fridgeTemp > 6 ? 'status-warning' : 'status-good');
+
+                // Estoque de farinha (diminui gradualmente)
+                const currentFlour = parseInt(stockFlour.textContent);
+                if (Math.random() < 0.3 && currentFlour > 5) {
+                    const newFlour = currentFlour - 1;
+                    stockFlour.textContent = newFlour + 'kg';
+                    stockFlour.className = 'sensor-value ' + (newFlour < 15 ? 'status-warning' : 'status-good');
+                }
+
+                // Pedidos em produção (varia entre 1-5)
+                const newOrders = Math.floor(1 + Math.random() * 5);
+                orders.textContent = newOrders;
+                orders.className = 'sensor-value ' + (newOrders > 4 ? 'status-warning' : 'status-good');
+
+            }, 3000);
+        }
+
+        // Responsividade
+        window.addEventListener('resize', () => {
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+
+        // Inicializar quando a página carregar
+        window.addEventListener('load', init);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d30cd477c51cd3',t:'MTc1NDg2NjIwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

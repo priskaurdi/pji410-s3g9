@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor 3D de Bolos - Confeitaria Premium</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            color: white;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .editor-panel {
+            width: 350px;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 3px solid #ffd700;
+        }
+
+        .panel-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .panel-section h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #ffd700;
+            padding-bottom: 8px;
+        }
+
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .option-btn {
+            padding: 12px 8px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .option-btn:hover {
+            background: rgba(255,215,0,0.3);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.active {
+            background: #ffd700;
+            color: black;
+            border-color: #ffd700;
+        }
+
+        .color-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: white;
+        }
+
+        .color-option.active {
+            border-color: #ffd700;
+            transform: scale(1.2);
+        }
+
+        .price-display {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px solid #4caf50;
+        }
+
+        .price-display h3 {
+            color: #4caf50;
+            margin-bottom: 10px;
+        }
+
+        .price-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4caf50;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #4caf50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .add-to-cart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 400px;
+        }
+
+        .controls-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 100;
+        }
+
+        .controls-info h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .lighting-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .lighting-btn {
+            flex: 1;
+            padding: 8px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid transparent;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .lighting-btn.active {
+            background: #ffd700;
+            color: black;
+            border-color: #ffd700;
+        }
+
+        .slider-control {
+            margin: 15px 0;
+        }
+
+        .slider-control label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.3);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ffd700;
+            cursor: pointer;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 200;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top: 5px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-notification {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(76, 175, 80, 0.95);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            z-index: 200;
+            border: 3px solid #4caf50;
+        }
+
+        .success-notification.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .texture-preview {
+            width: 100%;
+            height: 60px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background-size: cover;
+            background-position: center;
+        }
+
+        @media (max-width: 768px) {
+            #container {
+                flex-direction: column;
+            }
+            
+            .editor-panel {
+                width: 100%;
+                height: 40vh;
+                order: 2;
+            }
+            
+            #canvas-container {
+                height: 60vh;
+                order: 1;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container">
+            <div class="header">
+                <h1>🎨 Editor 3D de Bolos</h1>
+                <p>Crie seu bolo dos sonhos com visualização em tempo real</p>
+            </div>
+
+            <div class="controls-info">
+                <h3>🎮 Controles 3D</h3>
+                <p>• Clique e arraste para rotacionar</p>
+                <p>• Use a roda do mouse para zoom</p>
+                <p>• Personalize usando o painel lateral</p>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Carregando Editor 3D...</p>
+            </div>
+
+            <div class="success-notification" id="success-notification">
+                <h3>✅ Bolo Adicionado ao Carrinho!</h3>
+                <p>Seu bolo personalizado foi salvo com sucesso</p>
+            </div>
+        </div>
+
+        <div class="editor-panel">
+            <div class="price-display">
+                <h3>💰 Preço Total</h3>
+                <div class="price-value">R$ <span id="total-price">45,00</span></div>
+            </div>
+
+            <div class="panel-section">
+                <h3>📐 Formato do Bolo</h3>
+                <div class="option-grid">
+                    <div class="option-btn active" onclick="changeShape('round')">
+                        🔵<br>Redondo
+                    </div>
+                    <div class="option-btn" onclick="changeShape('square')">
+                        🟦<br>Quadrado
+                    </div>
+                    <div class="option-btn" onclick="changeShape('heart')">
+                        💖<br>Coração
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>📏 Tamanho</h3>
+                <div class="option-grid">
+                    <div class="option-btn" onclick="changeSize('small')">
+                        Pequeno<br><small>15cm</small>
+                    </div>
+                    <div class="option-btn active" onclick="changeSize('medium')">
+                        Médio<br><small>20cm</small>
+                    </div>
+                    <div class="option-btn" onclick="changeSize('large')">
+                        Grande<br><small>25cm</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🏗️ Andares</h3>
+                <div class="option-grid">
+                    <div class="option-btn active" onclick="changeLayers(1)">
+                        1 Andar
+                    </div>
+                    <div class="option-btn" onclick="changeLayers(2)">
+                        2 Andares
+                    </div>
+                    <div class="option-btn" onclick="changeLayers(3)">
+                        3 Andares
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🍰 Sabor da Massa</h3>
+                <div class="option-grid">
+                    <div class="option-btn active" onclick="changeFlavor('chocolate')">
+                        🍫<br>Chocolate
+                    </div>
+                    <div class="option-btn" onclick="changeFlavor('vanilla')">
+                        🤍<br>Baunilha
+                    </div>
+                    <div class="option-btn" onclick="changeFlavor('red-velvet')">
+                        ❤️<br>Red Velvet
+                    </div>
+                    <div class="option-btn" onclick="changeFlavor('lemon')">
+                        🍋<br>Limão
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🧁 Recheio</h3>
+                <div class="option-grid">
+                    <div class="option-btn active" onclick="changeFilling('brigadeiro')">
+                        🍫<br>Brigadeiro
+                    </div>
+                    <div class="option-btn" onclick="changeFilling('ninho')">
+                        🥛<br>Ninho
+                    </div>
+                    <div class="option-btn" onclick="changeFilling('frutas')">
+                        🍓<br>Frutas
+                    </div>
+                    <div class="option-btn" onclick="changeFilling('doce-leite')">
+                        🍯<br>Doce de Leite
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🎂 Cobertura</h3>
+                <div class="option-grid">
+                    <div class="option-btn active" onclick="changeFrosting('chantilly')">
+                        ☁️<br>Chantilly
+                    </div>
+                    <div class="option-btn" onclick="changeFrosting('ganache')">
+                        🍫<br>Ganache
+                    </div>
+                    <div class="option-btn" onclick="changeFrosting('pasta-americana')">
+                        🎨<br>Pasta Americana
+                    </div>
+                    <div class="option-btn" onclick="changeFrosting('cream-cheese')">
+                        🧀<br>Cream Cheese
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🎨 Cor da Cobertura</h3>
+                <div class="color-picker">
+                    <div class="color-option active" style="background: #ffffff" onclick="changeColor('#ffffff')"></div>
+                    <div class="color-option" style="background: #ff69b4" onclick="changeColor('#ff69b4')"></div>
+                    <div class="color-option" style="background: #87ceeb" onclick="changeColor('#87ceeb')"></div>
+                    <div class="color-option" style="background: #98fb98" onclick="changeColor('#98fb98')"></div>
+                    <div class="color-option" style="background: #ffd700" onclick="changeColor('#ffd700')"></div>
+                    <div class="color-option" style="background: #dda0dd" onclick="changeColor('#dda0dd')"></div>
+                    <div class="color-option" style="background: #f0e68c" onclick="changeColor('#f0e68c')"></div>
+                    <div class="color-option" style="background: #ffa07a" onclick="changeColor('#ffa07a')"></div>
+                    <div class="color-option" style="background: #20b2aa" onclick="changeColor('#20b2aa')"></div>
+                    <div class="color-option" style="background: #cd853f" onclick="changeColor('#cd853f')"></div>
+                    <div class="color-option" style="background: #dc143c" onclick="changeColor('#dc143c')"></div>
+                    <div class="color-option" style="background: #4169e1" onclick="changeColor('#4169e1')"></div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>💡 Iluminação</h3>
+                <div class="lighting-controls">
+                    <div class="lighting-btn active" onclick="changeLighting('warm')">
+                        🌅 Quente
+                    </div>
+                    <div class="lighting-btn" onclick="changeLighting('cool')">
+                        ❄️ Fria
+                    </div>
+                    <div class="lighting-btn" onclick="changeLighting('natural')">
+                        ☀️ Natural
+                    </div>
+                </div>
+                
+                <div class="slider-control">
+                    <label>Intensidade da Luz:</label>
+                    <input type="range" class="slider" min="0.3" max="1.5" step="0.1" value="0.8" onchange="changeLightIntensity(this.value)">
+                </div>
+            </div>
+
+            <button class="add-to-cart-btn" onclick="addCustomCakeToCart()">
+                🛒 Adicionar ao Carrinho
+            </button>
+
+            <button class="add-to-cart-btn" style="background: linear-gradient(45deg, #ff6b6b, #ee5a52);" onclick="resetCake()">
+                🔄 Resetar Design
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Estado global da aplicação
+        let cart = [];
+        let orders = [];
+        let currentOrder = null;
+        let orderIdCounter = 1;
+
+        // Simulação WebSocket para atualizações em tempo real
+        let websocketSimulation = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            startWebSocketSimulation();
+            loadSampleOrders();
+        });
+
+        function initializeApp() {
+            // Registrar Service Worker para PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZnVuY3Rpb24oZXZlbnQpIHt9KTs=');
+            }
+            
+            updateCartCount();
+            updateOrdersDisplay();
+        }
+
+        // Navegação entre telas
+        function showScreen(screenName) {
+            // Remover classe active de todas as telas
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Remover classe active de todas as abas
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Ativar tela selecionada
+            document.getElementById(screenName + '-screen').classList.add('active');
+            
+            // Ativar aba correspondente
+            event.target.classList.add('active');
+            
+            // Atualizar dados específicos da tela
+            if (screenName === 'dashboard') {
+                updateOrdersDisplay();
+            } else if (screenName === 'order') {
+                updateOrderStatus();
+            }
+        }
+
+        // Gerenciamento do carrinho
+        function addToCart(itemName, price) {
+            const existingItem = cart.find(item => item.name === itemName);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: Date.now(),
+                    name: itemName,
+                    price: price,
+                    quantity: 1
+                });
+            }
+            
+            updateCartCount();
+            showNotification(`${itemName} adicionado ao carrinho!`);
+        }
+
+        function removeFromCart(itemId) {
+            cart = cart.filter(item => item.id !== itemId);
+            updateCartDisplay();
+            updateCartCount();
+        }
+
+        function updateQuantity(itemId, change) {
+            const item = cart.find(item => item.id === itemId);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(itemId);
+                } else {
+                    updateCartDisplay();
+                    updateCartCount();
+                }
+            }
+        }
+
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-count').textContent = totalItems;
+        }
+
+        function updateCartDisplay() {
+            const cartItems = document.getElementById('cart-items');
+            const cartTotalSection = document.getElementById('cart-total-section');
+            const cartTotal = document.getElementById('cart-total');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p style="text-align: center; color: #666; padding: 40px 0;">Seu carrinho está vazio</p>';
+                cartTotalSection.style.display = 'none';
+                return;
+            }
+            
+            cartTotalSection.style.display = 'block';
+            let total = 0;
+            
+            cartItems.innerHTML = cart.map(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                return `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <h4>${item.name}</h4>
+                            <p>R$ ${item.price.toFixed(2)} cada</p>
+                        </div>
+                        <div class="cart-item-controls">
+                            <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            cartTotal.textContent = total.toFixed(2);
+            document.getElementById('checkout-total').textContent = total.toFixed(2);
+        }
+
+        function openCart() {
+            updateCartDisplay();
+            document.getElementById('cart-panel').classList.add('open');
+        }
+
+        function closeCart() {
+            document.getElementById('cart-panel').classList.remove('open');
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCartDisplay();
+            updateCartCount();
+            showNotification('Carrinho limpo!');
+        }
+
+        // Checkout
+        function proceedToCheckout() {
+            if (cart.length === 0) {
+                showNotification('Seu carrinho está vazio!');
+                return;
+            }
+            
+            closeCart();
+            document.getElementById('checkout-modal').style.display = 'block';
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkout-modal').style.display = 'none';
+        }
+
+        function confirmOrder() {
+            const name = document.getElementById('customer-name').value.trim();
+            const phone = document.getElementById('customer-phone').value.trim();
+            
+            if (!name || !phone) {
+                showNotification('Por favor, preencha todos os campos!');
+                return;
+            }
+            
+            // Criar pedido
+            const orderCode = 'DC' + String(orderIdCounter).padStart(3, '0');
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            const newOrder = {
+                id: orderIdCounter++,
+                code: orderCode,
+                customer: name,
+                phone: phone,
+                items: [...cart],
+                total: total,
+                status: 'preparing',
+                timestamp: new Date(),
+                estimatedTime: '15-20 minutos'
+            };
+            
+            orders.push(newOrder);
+            currentOrder = newOrder;
+            
+            // Limpar carrinho e fechar checkout
+            cart = [];
+            updateCartCount();
+            closeCheckout();
+            
+            // Mostrar pedido ativo
+            updateOrderStatus();
+            showScreen('order');
+            
+            // Atualizar dashboard
+            updateOrdersDisplay();
+            updateActiveOrdersCount();
+            
+            showNotification('Pedido confirmado! Código: ' + orderCode);
+            
+            // Limpar formulário
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-phone').value = '';
+        }
+
+        // Status do pedido
+        function updateOrderStatus() {
+            const noOrder = document.getElementById('no-order');
+            const orderDetails = document.getElementById('order-details');
+            
+            if (!currentOrder) {
+                noOrder.style.display = 'block';
+                orderDetails.style.display = 'none';
+                return;
+            }
+            
+            noOrder.style.display = 'none';
+            orderDetails.style.display = 'block';
+            
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            const orderCode = document.getElementById('order-code');
+            const estimatedTime = document.getElementById('estimated-time');
+            const orderTotal = document.getElementById('order-total');
+            
+            orderCode.textContent = currentOrder.code;
+            orderTotal.textContent = currentOrder.total.toFixed(2);
+            estimatedTime.textContent = currentOrder.estimatedTime;
+            
+            if (currentOrder.status === 'preparing') {
+                statusIndicator.className = 'status-indicator status-preparing';
+                statusIndicator.textContent = '⏳';
+                statusText.textContent = 'Preparando seu pedido...';
+            } else if (currentOrder.status === 'ready') {
+                statusIndicator.className = 'status-indicator status-ready';
+                statusIndicator.textContent = '✅';
+                statusText.textContent = 'Pedido pronto para retirada!';
+            }
+        }
+
+        // Dashboard do atendente
+        function updateOrdersDisplay() {
+            const ordersGrid = document.getElementById('orders-grid');
+            
+            if (orders.length === 0) {
+                ordersGrid.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Nenhum pedido no momento</p>';
+                return;
+            }
+            
+            ordersGrid.innerHTML = orders.map(order => {
+                const timeAgo = getTimeAgo(order.timestamp);
+                const statusClass = order.status === 'ready' ? 'ready' : '';
+                
+                return `
+                    <div class="order-card ${statusClass}">
+                        <div class="order-header">
+                            <div class="order-number">#${order.code}</div>
+                            <div class="order-time">${timeAgo}</div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <strong>Cliente:</strong> ${order.customer}<br>
+                            <strong>Telefone:</strong> ${order.phone}
+                        </div>
+                        
+                        <div class="order-items">
+                            ${order.items.map(item => `
+                                <div class="order-item">
+                                    <span>${item.quantity}x ${item.name}</span>
+                                    <span>R$ ${(item.price * item.quantity).toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <strong>Total: R$ ${order.total.toFixed(2)}</strong>
+                        </div>
+                        
+                        ${order.status === 'preparing' ? `
+                            <button class="mark-ready-btn" onclick="markOrderReady(${order.id})">
+                                ✅ Marcar como Pronto
+                            </button>
+                        ` : `
+                            <button class="call-number-btn" onclick="callNumber('${order.code}')">
+                                📢 Chamar Cliente
+                            </button>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function markOrderReady(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = 'ready';
+                updateOrdersDisplay();
+                
+                // Atualizar pedido atual se for o mesmo
+                if (currentOrder && currentOrder.id === orderId) {
+                    currentOrder.status = 'ready';
+                    updateOrderStatus();
+                }
+                
+                showNotification(`Pedido #${order.code} marcado como pronto!`);
+            }
+        }
+
+        function callNumber(orderCode) {
+            // Atualizar display IoT
+            document.getElementById('display-number').textContent = orderCode;
+            
+            // Simular chamada via ESP32
+            showNotification(`Chamando cliente - Pedido ${orderCode}`);
+            
+            // Simular som de chamada (em uma implementação real, seria via IoT)
+            console.log(`ESP32: Chamando pedido ${orderCode}`);
+        }
+
+        function filterOrders(status) {
+            // Atualizar abas ativas
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Filtrar pedidos (implementação básica)
+            updateOrdersDisplay();
+        }
+
+        // Utilitários
+        function getTimeAgo(timestamp) {
+            const now = new Date();
+            const diff = now - timestamp;
+            const minutes = Math.floor(diff / 60000);
+            
+            if (minutes < 1) return 'Agora mesmo';
+            if (minutes < 60) return `${minutes} min atrás`;
+            
+            const hours = Math.floor(minutes / 60);
+            return `${hours}h ${minutes % 60}min atrás`;
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            
+            notificationText.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function updateActiveOrdersCount() {
+            const activeCount = orders.filter(order => order.status === 'preparing').length;
+            document.getElementById('active-orders-count').textContent = activeCount;
+        }
+
+        // Simulação WebSocket para atualizações em tempo real
+        function startWebSocketSimulation() {
+            websocketSimulation = setInterval(() => {
+                // Simular atualizações de sensores IoT
+                updateSensorData();
+                
+                // Simular mudanças de status de pedidos (ocasionalmente)
+                if (Math.random() < 0.1 && orders.length > 0) {
+                    const preparingOrders = orders.filter(o => o.status === 'preparing');
+                    if (preparingOrders.length > 0) {
+                        const randomOrder = preparingOrders[Math.floor(Math.random() * preparingOrders.length)];
+                        markOrderReady(randomOrder.id);
+                    }
+                }
+            }, 5000);
+        }
+
+        function updateSensorData() {
+            // Simular variações nos sensores (implementação básica)
+            const sensors = document.querySelectorAll('#iot-screen [style*="color: #4CAF50"], [style*="color: #2196F3"], [style*="color: #ff9800"]');
+            
+            // Temperatura do forno
+            if (sensors[0]) {
+                const temp = 175 + Math.random() * 10;
+                sensors[0].textContent = Math.round(temp) + '°C';
+            }
+            
+            // Temperatura da vitrine
+            if (sensors[1]) {
+                const temp = 2 + Math.random() * 4;
+                sensors[1].textContent = Math.round(temp) + '°C';
+            }
+        }
+
+        // Carregar pedidos de exemplo
+        function loadSampleOrders() {
+            // Adicionar alguns pedidos de exemplo para demonstração
+            const sampleOrders = [
+                {
+                    id: orderIdCounter++,
+                    code: 'DC001',
+                    customer: 'Maria Silva',
+                    phone: '(11) 99999-1111',
+                    items: [
+                        { name: 'Bolo de Chocolate Premium', price: 89.90, quantity: 1 }
+                    ],
+                    total: 89.90,
+                    status: 'preparing',
+                    timestamp: new Date(Date.now() - 10 * 60000), // 10 minutos atrás
+                    estimatedTime: '15-20 minutos'
+                },
+                {
+                    id: orderIdCounter++,
+                    code: 'DC002',
+                    customer: 'João Santos',
+                    phone: '(11) 99999-2222',
+                    items: [
+                        { name: 'Bolo Red Velvet', price: 79.90, quantity: 1 },
+                        { name: 'Cheesecake de Frutas Vermelhas', price: 84.90, quantity: 1 }
+                    ],
+                    total: 164.80,
+                    status: 'ready',
+                    timestamp: new Date(Date.now() - 25 * 60000), // 25 minutos atrás
+                    estimatedTime: '15-20 minutos'
+                }
+            ];
+            
+            orders.push(...sampleOrders);
+            updateOrdersDisplay();
+            updateActiveOrdersCount();
+        }
+
+        // Event listeners para responsividade
+        window.addEventListener('resize', () => {
+            // Fechar carrinho em telas pequenas se necessário
+            if (window.innerWidth <= 768) {
+                closeCart();
+            }
+        });
+
+        // Fechar modais ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'checkout-modal') {
+                closeCheckout();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d33c2554d8f1d3',t:'MTc1NDg2ODE0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

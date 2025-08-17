@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurador de Bolos 3D</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(145deg, #FFC3A0 0%, #FFAFBD 100%);
+            --panel-bg: rgba(30, 30, 30, 0.9);
+            --text-light: #f0f0f0;
+            --text-dark: #333;
+            --accent-yellow: #facc15;
+            --accent-green: #34d399;
+            --accent-red: #ef4444;
+            --btn-inactive: #4a4a4a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-gradient);
+            overflow: hidden;
+            color: var(--text-light);
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 320px;
+            width: calc(100% - 320px);
+            height: 100%;
+            z-index: 1;
+        }
+
+        .customizer-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 320px;
+            height: 100%;
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+        
+        .price-display {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--accent-yellow);
+            border-radius: 10px;
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .price-display h3 { font-size: 1rem; color: #ccc; margin-bottom: 5px; }
+        .price-display .price { font-size: 2.5rem; font-weight: 700; color: var(--accent-yellow); }
+
+        .config-group { margin-bottom: 20px; }
+        .config-group h4 {
+            font-size: 1.1rem; padding-bottom: 5px; border-bottom: 2px solid var(--accent-yellow);
+            margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
+        }
+
+        .config-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px; }
+        .config-btn {
+            background: var(--btn-inactive); color: var(--text-light); border: 2px solid transparent;
+            border-radius: 8px; padding: 10px; font-size: 0.9rem; text-align: center;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .config-btn:hover { background: #666; }
+        .config-btn.active { background: var(--accent-yellow); color: var(--text-dark); font-weight: 600; border-color: var(--accent-yellow); }
+        .config-btn span { font-size: 0.75rem; opacity: 0.8; }
+        
+        .customizer-panel .spacer { flex-grow: 1; }
+        
+        .add-to-cart-btn {
+            background: var(--accent-green); color: var(--text-dark); font-weight: 700;
+            font-size: 1.2rem; border: none; border-radius: 10px; padding: 15px;
+            cursor: pointer; transition: background 0.2s; width: 100%;
+        }
+        .add-to-cart-btn:hover { background: #6ee7b7; }
+        
+        .cart-toggle-btn {
+            position: fixed; top: 20px; right: 20px; width: 50px; height: 50px;
+            background: var(--panel-bg); border-radius: 50%; border: 1px solid #666;
+            color: var(--text-light); font-size: 1.5rem; cursor: pointer; z-index: 20;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .cart-count {
+            position: absolute; top: -5px; right: -5px; background: var(--accent-red); color: white;
+            width: 22px; height: 22px; border-radius: 50%; font-size: 0.8rem; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .cart-panel {
+            position: fixed; top: 0; right: -100%; width: 350px; height: 100%;
+            background: var(--panel-bg); backdrop-filter: blur(10px); padding: 20px;
+            z-index: 15; transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+            display: flex; flex-direction: column;
+        }
+        .cart-panel.active { right: 0; }
+        
+        /* Modificação: Adiciona flexbox para alinhar título e botão de fechar */
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #555;
+        }
+        .cart-header h2 {
+            font-size: 1.5rem;
+            margin: 0; /* Remove margem padrão do h2 */
+        }
+
+        /* Novo: Estilo para o botão de fechar */
+        .close-cart-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 2.2rem;
+            font-weight: 300;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 5px;
+        }
+        
+        #cart-items { flex-grow: 1; overflow-y: auto; }
+        .cart-item {
+            background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .cart-item-details h5 { font-size: 1rem; }
+        .cart-item-details p { font-size: 0.8rem; opacity: 0.7; }
+        .cart-item-price { font-size: 1rem; font-weight: 600; }
+        .remove-item-btn {
+            background: var(--accent-red); color: white; border: none; width: 24px; height: 24px;
+            border-radius: 5px; cursor: pointer; margin-left: 10px;
+        }
+        
+        .cart-total { margin-top: 20px; padding-top: 15px; border-top: 1px solid #555; text-align: right; }
+        .cart-total h3 { font-size: 1.5rem; }
+        
+        .cart-actions { margin-top: 20px; display: flex; gap: 10px; }
+        .cart-actions button {
+            flex-grow: 1; padding: 12px; border-radius: 8px; border: none;
+            font-size: 1rem; font-weight: 600; cursor: pointer;
+        }
+        .checkout-btn { background: var(--accent-green); color: var(--text-dark); }
+        .clear-cart-btn { background: var(--accent-red); color: white; }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div class="customizer-panel">
+        <div class="price-display">
+            <h3><i class="fas fa-dollar-sign"></i> Preço Total</h3>
+            <div class="price" id="price-total">R$ 0.00</div>
+        </div>
+        <div id="config-groups"></div>
+        <div class="spacer"></div>
+        <button class="add-to-cart-btn" onclick="addToCart()"><i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho</button>
+    </div>
+
+    <button class="cart-toggle-btn" onclick="toggleCart()">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-count" id="cart-count">0</span>
+    </button>
+    <div class="cart-panel" id="cart-panel">
+        <div class="cart-header">
+            <h2><i class="fas fa-shopping-cart"></i> Carrinho</h2>
+            <button class="close-cart-btn" onclick="toggleCart()">×</button>
+        </div>
+        <div id="cart-items"></div>
+        <div class="cart-total">
+            <h3>Total: <span id="cart-total-price">R$ 0.00</span></h3>
+        </div>
+        <div class="cart-actions">
+            <button class="clear-cart-btn" onclick="clearCart()">Limpar Carrinho</button>
+            <button class="checkout-btn" onclick="alert('Indo para o checkout!')">Finalizar Pedido</button>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, controls, cakeGroup;
+        const canvasContainer = document.getElementById('canvas-container');
+        const BASE_PRICE = 45.00;
+        let currentConfig = {};
+        const cart = [];
+
+        const CONFIG_OPTIONS = {
+            shape: { name: 'Formato do Bolo', icon: 'fa-cube', options: [ { id: 'round', label: 'Redondo', priceMod: 0 }, { id: 'square', label: 'Quadrado', priceMod: 5 }, { id: 'heart', label: 'Coração', priceMod: 10 } ] },
+            size: { name: 'Tamanho', icon: 'fa-ruler-combined', options: [ { id: 'small', label: 'Pequeno', sub: '15cm', priceMod: 0 }, { id: 'medium', label: 'Médio', sub: '20cm', priceMod: 15 }, { id: 'large', label: 'Grande', sub: '25cm', priceMod: 25 } ] },
+            tiers: { name: 'Andares', icon: 'fa-layer-group', options: [ { id: 1, label: '1 Andar', priceMod: 0 }, { id: 2, label: '2 Andares', priceMod: 30 }, { id: 3, label: '3 Andares', priceMod: 60 } ] },
+            flavor: { name: 'Sabor da Massa', icon: 'fa-birthday-cake', options: [ { id: 'chocolate', label: 'Chocolate', color: 0x4B3F38, priceMod: 0 }, { id: 'vanilla', label: 'Baunilha', color: 0xF3E5AB, priceMod: 0 }, { id: 'redvelvet', label: 'Red Velvet', color: 0x9B1C31, priceMod: 5 } ] },
+            topping: { name: 'Cobertura', icon: 'fa-ice-cream', options: [ { id: 'ganache', label: 'Ganache', color: 0x2E2521, priceMod: 10 }, { id: 'chantilly', label: 'Chantilly', color: 0xFFFFFF, priceMod: 5 }, { id: 'brigadeiro', label: 'Brigadeiro', color: 0x3D2B1F, priceMod: 10 } ] }
+        };
+
+        function initializeConfigurator() {
+            const configContainer = document.getElementById('config-groups');
+            configContainer.innerHTML = '';
+            for (const key in CONFIG_OPTIONS) {
+                const group = CONFIG_OPTIONS[key];
+                currentConfig[key] = group.options[0];
+                let optionsHTML = group.options.map((opt, index) =>
+                    `<button class="config-btn ${index === 0 ? 'active' : ''}" data-group="${key}" data-id="${opt.id}">
+                        ${opt.label} ${opt.sub ? `<span>${opt.sub}</span>` : ''}
+                    </button>`
+                ).join('');
+                configContainer.innerHTML += `
+                    <div class="config-group">
+                        <h4><i class="fas ${group.icon}"></i> ${group.name}</h4>
+                        <div class="config-options">${optionsHTML}</div>
+                    </div>`;
+            }
+            document.querySelectorAll('.config-btn').forEach(btn => btn.addEventListener('click', handleOptionClick));
+            updatePrice();
+        }
+
+        function handleOptionClick(event) {
+            const btn = event.currentTarget;
+            const groupKey = btn.dataset.group;
+            const optionId = btn.dataset.id;
+            currentConfig[groupKey] = CONFIG_OPTIONS[groupKey].options.find(opt => String(opt.id) === optionId);
+            document.querySelectorAll(`.config-btn[data-group="${groupKey}"]`).forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updatePrice();
+            redrawCake();
+        }
+
+        function updatePrice() {
+            let totalPrice = BASE_PRICE;
+            let description = [];
+            for (const key in currentConfig) {
+                totalPrice += currentConfig[key].priceMod || 0;
+                description.push(currentConfig[key].label);
+            }
+            currentConfig.price = totalPrice;
+            currentConfig.description = description.join(', ');
+            document.getElementById('price-total').textContent = `R$ ${totalPrice.toFixed(2)}`;
+        }
+        
+        function addToCart() { cart.push({ ...currentConfig, cartId: Date.now() }); updateCartUI(); toggleCart(true); }
+        function toggleCart(forceOpen) {
+            const panel = document.getElementById('cart-panel');
+            if (forceOpen === true) {
+                panel.classList.add('active');
+            } else if (forceOpen === false) {
+                panel.classList.remove('active');
+            } else {
+                panel.classList.toggle('active');
+            }
+        }
+        function updateCartUI() {
+            const itemsContainer = document.getElementById('cart-items');
+            const countEl = document.getElementById('cart-count');
+            const totalEl = document.getElementById('cart-total-price');
+            itemsContainer.innerHTML = '';
+            let cartTotal = 0;
+            if (cart.length === 0) itemsContainer.innerHTML = '<p style="text-align:center; opacity:0.7;">O seu carrinho está vazio.</p>';
+            cart.forEach(item => {
+                cartTotal += item.price;
+                itemsContainer.innerHTML += `
+                    <div class="cart-item">
+                        <div class="cart-item-details"><h5>Bolo Personalizado</h5><p>${item.description}</p></div>
+                        <div class="cart-item-price">R$ ${item.price.toFixed(2)}</div>
+                        <button class="remove-item-btn" onclick="removeFromCart(${item.cartId})">×</button>
+                    </div>`;
+            });
+            countEl.textContent = cart.length;
+            totalEl.textContent = `R$ ${cartTotal.toFixed(2)}`;
+        }
+        function removeFromCart(cartId) { const index = cart.findIndex(item => item.cartId === cartId); if (index > -1) cart.splice(index, 1); updateCartUI(); }
+        function clearCart() { cart.length = 0; updateCartUI(); }
+        
+        function init3D() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(50, canvasContainer.clientWidth / canvasContainer.clientHeight, 0.1, 1000);
+            camera.position.set(0, 3, 8);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            canvasContainer.appendChild(renderer.domElement);
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.target.set(0, 1.5, 0);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 10, 7);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            const platform = new THREE.Mesh(new THREE.CylinderGeometry(3, 3.1, 0.2, 64), new THREE.MeshStandardMaterial({ color: 0xcccccc }));
+            platform.receiveShadow = true;
+            scene.add(platform);
+            animate();
+        }
+
+        function redrawCake() {
+            if (cakeGroup) scene.remove(cakeGroup);
+            cakeGroup = new THREE.Group();
+            const TIER_HEIGHT = 1.2, sizeMap = { small: 0.8, medium: 1.0, large: 1.2 }, scale = sizeMap[currentConfig.size.id];
+            const material = new THREE.MeshStandardMaterial({ color: currentConfig.flavor.color });
+            const toppingMaterial = new THREE.MeshStandardMaterial({ color: currentConfig.topping.color });
+            let currentTierY = TIER_HEIGHT / 2;
+            for(let i = 0; i < currentConfig.tiers.id; i++) {
+                let geometry, tierScale = scale * (1 - i * 0.15);
+                if (currentConfig.shape.id === 'square') {
+                    geometry = new THREE.BoxGeometry(2 * tierScale, TIER_HEIGHT, 2 * tierScale);
+                } else if (currentConfig.shape.id === 'heart') {
+                    const s = new THREE.Shape(); s.moveTo(0.5*tierScale,0.5*tierScale); s.bezierCurveTo(0.5*tierScale,0.5*tierScale,0.4*tierScale,0,0,0); s.bezierCurveTo(-0.6*tierScale,0,-0.6*tierScale,0.7*tierScale,-0.6*tierScale,0.7*tierScale); s.bezierCurveTo(-0.6*tierScale,1.1*tierScale,-0.3*tierScale,1.54*tierScale,0.5*tierScale,1.9*tierScale); s.bezierCurveTo(1.2*tierScale,1.54*tierScale,1.6*tierScale,1.1*tierScale,1.6*tierScale,0.7*tierScale); s.bezierCurveTo(1.6*tierScale,0.7*tierScale,1.6*tierScale,0,1*tierScale,0); s.bezierCurveTo(0.7*tierScale,0,0.5*tierScale,0.5*tierScale,0.5*tierScale,0.5*tierScale);
+                    geometry = new THREE.ExtrudeGeometry(s, { depth: TIER_HEIGHT, bevelEnabled: false }); geometry.center();
+                } else {
+                    geometry = new THREE.CylinderGeometry(1.2 * tierScale, 1.2 * tierScale, TIER_HEIGHT, 64);
+                }
+                const tierMesh = new THREE.Mesh(geometry, material); tierMesh.position.y = currentTierY; tierMesh.castShadow = true;
+                const toppingGeom = new THREE.CylinderGeometry(1.22 * tierScale, 1.22 * tierScale, 0.2, 64);
+                const toppingMesh = new THREE.Mesh(toppingGeom, toppingMaterial); toppingMesh.position.y = currentTierY + (TIER_HEIGHT / 2) - 0.1;
+                cakeGroup.add(tierMesh); cakeGroup.add(toppingMesh);
+                currentTierY += TIER_HEIGHT;
+            }
+            cakeGroup.position.y = 0.1; scene.add(cakeGroup);
+        }
+
+        function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
+        
+        function onWindowResize() {
+            const width = canvasContainer.clientWidth;
+            const height = canvasContainer.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+
+        window.addEventListener('resize', onWindowResize);
+        init3D();
+        initializeConfigurator();
+        updateCartUI();
+        redrawCake();
+    </script>
+</body>
+</html>

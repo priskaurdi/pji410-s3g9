@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor 3D de Bolos - Confeitaria Premium</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            color: white;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .editor-panel {
+            width: 350px;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 3px solid #ffd700;
+        }
+
+        .panel-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .panel-section h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #ffd700;
+            padding-bottom: 8px;
+        }
+
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .option-btn {
+            padding: 12px 8px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .option-btn:hover {
+            background: rgba(255,215,0,0.3);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.active {
+            background: #ffd700;
+            color: black;
+            border-color: #ffd700;
+        }
+
+        .color-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: white;
+        }
+
+        .color-option.active {
+            border-color: #ffd700;
+            transform: scale(1.2);
+        }
+
+        .price-display {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 2px solid #4caf50;
+        }
+
+        .price-display h3 {
+            color: #4caf50;
+            margin-bottom: 10px;
+        }
+
+        .price-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4caf50;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #4caf50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .add-to-cart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 400px;
+        }
+
+        .controls-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 100;
+        }
+
+        .controls-info h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        .lighting-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .lighting-btn {
+            flex: 1;
+            padding: 8px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid transparent;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .lighting-btn.active {
+            background: #ffd700;
+            color: black;
+            border-color: #ffd700;
+        }
+
+        .slider-control {
+            margin: 15px 0;
+        }
+
+        .slider-control label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.3);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ffd700;
+            cursor: pointer;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 200;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top: 5px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-notification {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(76, 175, 80, 0.95);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            z-index: 200;
+            border: 3px solid #4caf50;
+        }
+
+        .success-notification.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .texture-preview {
+            width: 100%;
+            height: 60px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background-size: cover;
+            background-position: center;
+        }
+
+        @media (max-width: 768px) {
+            #container {
+                flex-direction: column;
+            }
+            
+            .editor-panel {
+                width: 100%;
+                height: 40vh;
+                order: 2;
+            }
+            
+            #canvas-container {
+                height: 60vh;
+                order: 1;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container">
+            <div class="header">
+                <h1>🎨 Editor 3D de Bolos</h1>
+                <p>Crie seu bolo dos sonhos com visualização em tempo real</p>
+            </div>
+
+            <div class="controls-info">
+                <h3>🎮 Controles 3D</h3>
+                <p>• Clique e arraste para rotacionar</p>
+                <p>• Use a roda do mouse para zoom</p>
+                <p>• Personalize usando o painel lateral</p>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Carregando Editor 3D...</p>
+            </div>
+
+            <div class="success-notification" id="success-notification">
+                <h3>✅ Bolo Adicionado ao Carrinho!</h3>
+                <p>Seu bolo personalizado foi salvo com sucesso</p>
+            </div>
+        </div>
+
+        <div class="editor-panel">
+            <div class="price-display">
+                <h3>💰 Preço Total</h3>
+                <div class="price-value">R$ <span id="total-price">45,00</span></div>
+            </div>
+
+            <div class="panel-section">
+                <h3>📐 Formato do Bolo</h3>
+                <div class="option-grid">
+                    <div class="option-btn active" onclick="changeShape('round')">
+                        🔵<br>Redondo
+                    </div>
+                    <div class="option-btn" onclick="changeShape('square')">
+                        🟦<br>Quadrado
+                    </div>
+                    <div class="option-btn" onclick="changeShape('heart')">
+                        💖<br>Coração
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>📏 Tamanho</h3>
+                <div class="option-grid">
+                    <div class="option-btn" onclick="changeSize('small')">
+                        Pequeno<br><small>15cm</small>
+                    </div>
+                    <div class="option-btn active" onclick="changeSize('medium')">
+                        Médio<br><small>20cm</small>
+                    </div>
+                    <div class="option-btn" onclick="changeSize('large')">
+                        Grande<br><small>25cm</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🏗️ Andares</h3>
+                <div class="option-grid">
+                    <div class="option-btn active" onclick="changeLayers(1)">
+                        1 Andar
+                    </div>
+                    <div class="option-btn" onclick="changeLayers(2)">
+                        2 Andares
+                    </div>
+                    <div class="option-btn" onclick="changeLayers(3)">
+                        3 Andares
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🍰 Sabor da Massa</h3>
+                <div class="option-grid">
+                    <div class="option-btn active" onclick="changeFlavor('chocolate')">
+                        🍫<br>Chocolate
+                    </div>
+                    <div class="option-btn" onclick="changeFlavor('vanilla')">
+                        🤍<br>Baunilha
+                    </div>
+                    <div class="option-btn" onclick="changeFlavor('red-velvet')">
+                        ❤️<br>Red Velvet
+                    </div>
+                    <div class="option-btn" onclick="changeFlavor('lemon')">
+                        🍋<br>Limão
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🧁 Recheio</h3>
+                <div class="option-grid">
+                    <div class="option-btn active" onclick="changeFilling('brigadeiro')">
+                        🍫<br>Brigadeiro
+                    </div>
+                    <div class="option-btn" onclick="changeFilling('ninho')">
+                        🥛<br>Ninho
+                    </div>
+                    <div class="option-btn" onclick="changeFilling('frutas')">
+                        🍓<br>Frutas
+                    </div>
+                    <div class="option-btn" onclick="changeFilling('doce-leite')">
+                        🍯<br>Doce de Leite
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🎂 Cobertura</h3>
+                <div class="option-grid">
+                    <div class="option-btn active" onclick="changeFrosting('chantilly')">
+                        ☁️<br>Chantilly
+                    </div>
+                    <div class="option-btn" onclick="changeFrosting('ganache')">
+                        🍫<br>Ganache
+                    </div>
+                    <div class="option-btn" onclick="changeFrosting('pasta-americana')">
+                        🎨<br>Pasta Americana
+                    </div>
+                    <div class="option-btn" onclick="changeFrosting('cream-cheese')">
+                        🧀<br>Cream Cheese
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🎨 Cor da Cobertura</h3>
+                <div class="color-picker">
+                    <div class="color-option active" style="background: #ffffff" onclick="changeColor('#ffffff')"></div>
+                    <div class="color-option" style="background: #ff69b4" onclick="changeColor('#ff69b4')"></div>
+                    <div class="color-option" style="background: #87ceeb" onclick="changeColor('#87ceeb')"></div>
+                    <div class="color-option" style="background: #98fb98" onclick="changeColor('#98fb98')"></div>
+                    <div class="color-option" style="background: #ffd700" onclick="changeColor('#ffd700')"></div>
+                    <div class="color-option" style="background: #dda0dd" onclick="changeColor('#dda0dd')"></div>
+                    <div class="color-option" style="background: #f0e68c" onclick="changeColor('#f0e68c')"></div>
+                    <div class="color-option" style="background: #ffa07a" onclick="changeColor('#ffa07a')"></div>
+                    <div class="color-option" style="background: #20b2aa" onclick="changeColor('#20b2aa')"></div>
+                    <div class="color-option" style="background: #cd853f" onclick="changeColor('#cd853f')"></div>
+                    <div class="color-option" style="background: #dc143c" onclick="changeColor('#dc143c')"></div>
+                    <div class="color-option" style="background: #4169e1" onclick="changeColor('#4169e1')"></div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>💡 Iluminação</h3>
+                <div class="lighting-controls">
+                    <div class="lighting-btn active" onclick="changeLighting('warm')">
+                        🌅 Quente
+                    </div>
+                    <div class="lighting-btn" onclick="changeLighting('cool')">
+                        ❄️ Fria
+                    </div>
+                    <div class="lighting-btn" onclick="changeLighting('natural')">
+                        ☀️ Natural
+                    </div>
+                </div>
+                
+                <div class="slider-control">
+                    <label>Intensidade da Luz:</label>
+                    <input type="range" class="slider" min="0.3" max="1.5" step="0.1" value="0.8" onchange="changeLightIntensity(this.value)">
+                </div>
+            </div>
+
+            <button class="add-to-cart-btn" onclick="addCustomCakeToCart()">
+                🛒 Adicionar ao Carrinho
+            </button>
+
+            <button class="add-to-cart-btn" style="background: linear-gradient(45deg, #ff6b6b, #ee5a52);" onclick="resetCake()">
+                🔄 Resetar Design
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, controls;
+        let cake = { base: null, frosting: null, decorations: [] };
+        let currentConfig = {
+            shape: 'round',
+            size: 'medium',
+            layers: 1,
+            flavor: 'chocolate',
+            filling: 'brigadeiro',
+            frosting: 'chantilly',
+            color: '#ffffff',
+            lighting: 'warm'
+        };
+
+        const prices = {
+            base: { small: 35, medium: 45, large: 60 },
+            layers: { 1: 0, 2: 25, 3: 45 },
+            flavors: { chocolate: 0, vanilla: 0, 'red-velvet': 5, lemon: 3 },
+            fillings: { brigadeiro: 0, ninho: 5, frutas: 8, 'doce-leite': 3 },
+            frostings: { chantilly: 0, ganache: 8, 'pasta-americana': 12, 'cream-cheese': 6 }
+        };
+
+        function init() {
+            // Cena
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x2c3e50);
+
+            // Câmera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 3, 5);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth - 350, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Controles
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2;
+            controls.minDistance = 2;
+            controls.maxDistance = 10;
+
+            // Iluminação inicial
+            setupLighting();
+
+            // Criar bolo inicial
+            createCake();
+
+            // Animação
+            animate();
+
+            // Esconder loading
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 1500);
+        }
+
+        function setupLighting() {
+            // Limpar luzes existentes
+            scene.children = scene.children.filter(child => child.type !== 'DirectionalLight' && child.type !== 'AmbientLight' && child.type !== 'PointLight');
+
+            // Luz ambiente
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+
+            // Luz direcional principal
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 10, 5);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+
+            // Luzes pontuais para realce
+            const pointLight1 = new THREE.PointLight(0xffffff, 0.5, 10);
+            pointLight1.position.set(-3, 3, 3);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0xffffff, 0.3, 8);
+            pointLight2.position.set(3, 2, -3);
+            scene.add(pointLight2);
+
+            // Aplicar configuração de iluminação
+            changeLighting(currentConfig.lighting);
+        }
+
+        function createCake() {
+            // Limpar bolo anterior
+            if (cake.base) scene.remove(cake.base);
+            if (cake.frosting) scene.remove(cake.frosting);
+            cake.decorations.forEach(decoration => scene.remove(decoration));
+            cake.decorations = [];
+
+            const sizeMultiplier = { small: 0.8, medium: 1.0, large: 1.3 }[currentConfig.size];
+            const layerHeight = 0.4;
+
+            // Criar base do bolo
+            let geometry;
+            switch (currentConfig.shape) {
+                case 'round':
+                    geometry = new THREE.CylinderGeometry(1 * sizeMultiplier, 1 * sizeMultiplier, layerHeight * currentConfig.layers, 32);
+                    break;
+                case 'square':
+                    geometry = new THREE.BoxGeometry(2 * sizeMultiplier, layerHeight * currentConfig.layers, 2 * sizeMultiplier);
+                    break;
+                case 'heart':
+                    geometry = createHeartGeometry(sizeMultiplier, layerHeight * currentConfig.layers);
+                    break;
+            }
+
+            // Material da massa baseado no sabor
+            const flavorColors = {
+                chocolate: 0x8B4513,
+                vanilla: 0xFFF8DC,
+                'red-velvet': 0x8B0000,
+                lemon: 0xFFFACD
+            };
+
+            const baseMaterial = new THREE.MeshLambertMaterial({ 
+                color: flavorColors[currentConfig.flavor],
+                transparent: true,
+                opacity: 0.9
+            });
+
+            cake.base = new THREE.Mesh(geometry, baseMaterial);
+            cake.base.position.y = (layerHeight * currentConfig.layers) / 2;
+            cake.base.castShadow = true;
+            cake.base.receiveShadow = true;
+            scene.add(cake.base);
+
+            // Criar cobertura
+            createFrosting(sizeMultiplier, layerHeight);
+
+            // Adicionar decorações baseadas no número de andares
+            if (currentConfig.layers > 1) {
+                createLayerDecorations(sizeMultiplier, layerHeight);
+            }
+
+            // Atualizar preço
+            updatePrice();
+        }
+
+        function createHeartGeometry(size, height) {
+            const heartShape = new THREE.Shape();
+            const x = 0, y = 0;
+            heartShape.moveTo(x, y);
+            heartShape.bezierCurveTo(x, y, x - size/2, y - size/2, x - size, y);
+            heartShape.bezierCurveTo(x - size - size/2, y, x - size - size/2, y + size/2, x - size - size/2, y + size/2);
+            heartShape.bezierCurveTo(x - size - size/2, y + size, x - size, y + size * 1.3, x, y + size * 1.7);
+            heartShape.bezierCurveTo(x + size, y + size * 1.3, x + size + size/2, y + size, x + size + size/2, y + size/2);
+            heartShape.bezierCurveTo(x + size + size/2, y + size/2, x + size + size/2, y, x + size, y);
+            heartShape.bezierCurveTo(x + size/2, y - size/2, x, y, x, y);
+
+            const extrudeSettings = {
+                depth: height,
+                bevelEnabled: true,
+                bevelSegments: 2,
+                steps: 2,
+                bevelSize: 0.1,
+                bevelThickness: 0.1
+            };
+
+            return new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
+        }
+
+        function createFrosting(sizeMultiplier, layerHeight) {
+            let frostingGeometry;
+            const frostingHeight = 0.15;
+            const topY = (layerHeight * currentConfig.layers) + frostingHeight/2;
+
+            switch (currentConfig.shape) {
+                case 'round':
+                    frostingGeometry = new THREE.CylinderGeometry(
+                        1.05 * sizeMultiplier, 
+                        1.05 * sizeMultiplier, 
+                        frostingHeight, 
+                        32
+                    );
+                    break;
+                case 'square':
+                    frostingGeometry = new THREE.BoxGeometry(
+                        2.1 * sizeMultiplier, 
+                        frostingHeight, 
+                        2.1 * sizeMultiplier
+                    );
+                    break;
+                case 'heart':
+                    frostingGeometry = createHeartGeometry(sizeMultiplier * 1.05, frostingHeight);
+                    break;
+            }
+
+            // Material da cobertura com textura
+            const frostingMaterial = new THREE.MeshPhongMaterial({ 
+                color: currentConfig.color,
+                shininess: 30,
+                transparent: true,
+                opacity: 0.95
+            });
+
+            cake.frosting = new THREE.Mesh(frostingGeometry, frostingMaterial);
+            cake.frosting.position.y = topY;
+            cake.frosting.castShadow = true;
+            scene.add(cake.frosting);
+
+            // Adicionar cereja no topo
+            const cherryGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+            const cherryMaterial = new THREE.MeshPhongMaterial({ color: 0xFF0000 });
+            const cherry = new THREE.Mesh(cherryGeometry, cherryMaterial);
+            cherry.position.y = topY + frostingHeight/2 + 0.08;
+            cherry.castShadow = true;
+            scene.add(cherry);
+            cake.decorations.push(cherry);
+        }
+
+        function createLayerDecorations(sizeMultiplier, layerHeight) {
+            for (let layer = 1; layer < currentConfig.layers; layer++) {
+                const y = layerHeight * layer;
+                
+                // Criar separadores entre andares
+                const separatorGeometry = new THREE.CylinderGeometry(
+                    (1 - layer * 0.2) * sizeMultiplier, 
+                    (1 - layer * 0.2) * sizeMultiplier, 
+                    0.05, 
+                    32
+                );
+                const separatorMaterial = new THREE.MeshPhongMaterial({ color: 0xFFD700 });
+                const separator = new THREE.Mesh(separatorGeometry, separatorMaterial);
+                separator.position.y = y;
+                separator.castShadow = true;
+                scene.add(separator);
+                cake.decorations.push(separator);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (controls) {
+                controls.update();
+            }
+
+            // Rotação sutil do bolo
+            if (cake.base) {
+                cake.base.rotation.y += 0.002;
+            }
+            if (cake.frosting) {
+                cake.frosting.rotation.y += 0.002;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Funções de personalização
+        function changeShape(shape) {
+            currentConfig.shape = shape;
+            updateActiveButton('.panel-section:nth-child(2) .option-btn', shape);
+            createCake();
+        }
+
+        function changeSize(size) {
+            currentConfig.size = size;
+            updateActiveButton('.panel-section:nth-child(3) .option-btn', size);
+            createCake();
+        }
+
+        function changeLayers(layers) {
+            currentConfig.layers = layers;
+            updateActiveButton('.panel-section:nth-child(4) .option-btn', layers.toString());
+            createCake();
+        }
+
+        function changeFlavor(flavor) {
+            currentConfig.flavor = flavor;
+            updateActiveButton('.panel-section:nth-child(5) .option-btn', flavor);
+            createCake();
+        }
+
+        function changeFilling(filling) {
+            currentConfig.filling = filling;
+            updateActiveButton('.panel-section:nth-child(6) .option-btn', filling);
+            updatePrice();
+        }
+
+        function changeFrosting(frosting) {
+            currentConfig.frosting = frosting;
+            updateActiveButton('.panel-section:nth-child(7) .option-btn', frosting);
+            createCake();
+        }
+
+        function changeColor(color) {
+            currentConfig.color = color;
+            updateActiveColorButton(color);
+            if (cake.frosting) {
+                cake.frosting.material.color.setHex(color.replace('#', '0x'));
+            }
+        }
+
+        function changeLighting(type) {
+            currentConfig.lighting = type;
+            updateActiveButton('.lighting-controls .lighting-btn', type);
+            
+            const lights = scene.children.filter(child => 
+                child.type === 'DirectionalLight' || child.type === 'PointLight'
+            );
+            
+            switch (type) {
+                case 'warm':
+                    lights.forEach(light => {
+                        light.color.setHex(0xFFE4B5);
+                    });
+                    break;
+                case 'cool':
+                    lights.forEach(light => {
+                        light.color.setHex(0xB0E0E6);
+                    });
+                    break;
+                case 'natural':
+                    lights.forEach(light => {
+                        light.color.setHex(0xFFFFFF);
+                    });
+                    break;
+            }
+        }
+
+        function changeLightIntensity(intensity) {
+            const lights = scene.children.filter(child => 
+                child.type === 'DirectionalLight' || child.type === 'PointLight'
+            );
+            
+            lights.forEach(light => {
+                light.intensity = parseFloat(intensity);
+            });
+        }
+
+        function updateActiveButton(selector, value) {
+            document.querySelectorAll(selector).forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.onclick.toString().includes(value)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function updateActiveColorButton(color) {
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('active');
+                if (option.style.background === color || option.style.background.includes(color.substring(1))) {
+                    option.classList.add('active');
+                }
+            });
+        }
+
+        function updatePrice() {
+            let total = prices.base[currentConfig.size];
+            total += prices.layers[currentConfig.layers];
+            total += prices.flavors[currentConfig.flavor];
+            total += prices.fillings[currentConfig.filling];
+            total += prices.frostings[currentConfig.frosting];
+            
+            document.getElementById('total-price').textContent = total.toFixed(2);
+        }
+
+        function addCustomCakeToCart() {
+            const notification = document.getElementById('success-notification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+            
+            // Aqui você integraria com o sistema de carrinho real
+            console.log('Bolo personalizado adicionado:', currentConfig);
+        }
+
+        function resetCake() {
+            currentConfig = {
+                shape: 'round',
+                size: 'medium',
+                layers: 1,
+                flavor: 'chocolate',
+                filling: 'brigadeiro',
+                frosting: 'chantilly',
+                color: '#ffffff',
+                lighting: 'warm'
+            };
+            
+            // Reset UI
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.color-option').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.lighting-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Reativar botões padrão
+            document.querySelector('.panel-section:nth-child(2) .option-btn').classList.add('active');
+            document.querySelector('.panel-section:nth-child(3) .option-btn:nth-child(2)').classList.add('active');
+            document.querySelector('.panel-section:nth-child(4) .option-btn').classList.add('active');
+            document.querySelector('.panel-section:nth-child(5) .option-btn').classList.add('active');
+            document.querySelector('.panel-section:nth-child(6) .option-btn').classList.add('active');
+            document.querySelector('.panel-section:nth-child(7) .option-btn').classList.add('active');
+            document.querySelector('.color-option').classList.add('active');
+            document.querySelector('.lighting-btn').classList.add('active');
+            
+            createCake();
+            setupLighting();
+        }
+
+        // Responsividade
+        window.addEventListener('resize', () => {
+            if (camera && renderer) {
+                const width = window.innerWidth > 768 ? window.innerWidth - 350 : window.innerWidth;
+                const height = window.innerWidth > 768 ? window.innerHeight : window.innerHeight * 0.6;
+                
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            }
+        });
+
+        // Inicializar quando a página carregar
+        window.addEventListener('load', init);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d31e0c34f9f1f7',t:'MTc1NDg2NjkxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+

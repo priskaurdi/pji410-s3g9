@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitrine de Bolos 3D Interativa</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #E88D67;
+            --secondary-color: #FADADD;
+            --text-color: #333;
+            --white-color: #fff;
+            --accent-yellow: #facc15;
+            --btn-inactive: #4a4a4a;
+            --panel-bg: rgba(30, 30, 30, 0.95);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(145deg, #FFC3A0 0%, #FFAFBD 100%);
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        #container { position: relative; width: 100vw; height: 100vh; }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+        .ui-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
+            display: flex; flex-direction: column; align-items: center; padding: 40px;
+        }
+
+        .top-bar {
+            position: absolute; top: 20px; left: 20px; right: 20px; display: flex;
+            justify-content: space-between; align-items: center; pointer-events: auto;
+        }
+        
+        .logo { font-weight: bold; font-size: 1.2rem; color: var(--white-color); }
+        .menu-btn { font-size: 1.8rem; cursor: pointer; color: var(--white-color); background: none; border: none; }
+
+        .header { text-align: center; margin-top: 20px; pointer-events: auto; transition: opacity 0.5s; }
+        .header h1 { font-size: 3rem; font-weight: 700; color: var(--white-color); text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
+        .header p { font-size: 1.1rem; max-width: 450px; color: var(--white-color); opacity: 0.9; }
+        
+        .nav-arrow {
+            position: absolute; top: 50%; transform: translateY(-50%); font-size: 3rem;
+            color: rgba(255, 255, 255, 0.7); cursor: pointer; pointer-events: auto; transition: color 0.3s;
+        }
+        .nav-arrow:hover { color: var(--white-color); }
+        .nav-arrow.left { left: 30px; }
+        .nav-arrow.right { right: 30px; }
+
+        .bottom-bar {
+            position: absolute; bottom: 40px; display: flex; flex-direction: column;
+            align-items: center; width: 100%; pointer-events: auto;
+        }
+
+        .icon-row { display: flex; gap: 25px; margin-bottom: 25px; position: relative; }
+        .icon-btn {
+            font-size: 1.5rem; cursor: pointer; color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s; position: relative;
+        }
+        .icon-btn:hover { color: var(--white-color); transform: scale(1.1); }
+        .tooltip {
+            position: absolute; bottom: 150%; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.7); color: var(--white-color); padding: 5px 10px;
+            border-radius: 5px; font-size: 0.8rem; white-space: nowrap; opacity: 0;
+            visibility: hidden; transition: opacity 0.3s, visibility 0.3s; pointer-events: none;
+        }
+        .icon-btn:hover .tooltip { opacity: 1; visibility: visible; }
+
+        .action-btn {
+            background: var(--white-color); color: var(--primary-color); border: none; padding: 15px 40px;
+            border-radius: 50px; font-size: 1.2rem; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: all 0.3s; min-width: 220px; text-align: center;
+        }
+        .action-btn:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(0,0,0,0.15); }
+
+        /* --- Painel de Customização (Esquerda) --- */
+        .customizer-panel {
+            position: fixed; top: 0; left: -100%; width: 320px; height: 100%;
+            background: var(--panel-bg); backdrop-filter: blur(10px); padding: 25px;
+            overflow-y: auto; z-index: 1000; transition: left 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+            color: #f0f0f0; pointer-events: auto;
+        }
+        .customizer-panel.active { left: 0; }
+        
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .panel-header h2 { font-size: 1.5rem; }
+        .close-panel-btn { font-size: 1.8rem; background: none; border: none; cursor: pointer; color: #aaa; }
+
+        .config-group { margin-bottom: 25px; }
+        .config-group h3 {
+            font-size: 1rem; font-weight: 600; margin-bottom: 15px;
+            padding-bottom: 5px; border-bottom: 2px solid var(--accent-yellow);
+        }
+        .config-options { display: flex; flex-wrap: wrap; gap: 10px; }
+        .config-btn {
+            background: var(--btn-inactive); color: #f0f0f0; border: 2px solid transparent; border-radius: 8px;
+            padding: 8px 15px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease;
+        }
+        .config-btn:hover { background: #666; }
+        .config-btn.active { background: var(--accent-yellow); color: var(--text-color); font-weight: 600; }
+
+        /* --- Painel de Detalhes (Direita) --- */
+        .details-panel {
+            position: fixed; top: 0; right: -100%; width: 320px; height: 100%;
+            background: var(--panel-bg); backdrop-filter: blur(10px); padding: 25px;
+            overflow-y: auto; z-index: 1000; transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+            color: #f0f0f0; pointer-events: auto;
+        }
+        .details-panel.active { right: 0; }
+        .details-group { background: rgba(0,0,0,0.2); border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .details-group h4 { font-size: 1rem; color: var(--accent-yellow); margin-bottom: 8px; }
+        .details-group p { font-size: 0.9rem; color: #ddd; }
+
+        /* --- Loading Spinner --- */
+        .loading {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.2);
+            border-top: 5px solid var(--white-color); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container"></div>
+        
+        <div class="ui-overlay">
+            <div class="top-bar">
+                 <div class="logo">🍰 <strong>Sweet</strong>UX</div>
+            </div>
+
+            <div class="header" id="cake-header">
+                <h1 id="cake-name">Bolo de Chocolate</h1>
+                <p id="cake-description">Uma deliciosa combinação de chocolate rico e cremoso.</p>
+            </div>
+
+            <div class="nav-arrow left" onclick="navigateCake(-1)">‹</div>
+            <div class="nav-arrow right" onclick="navigateCake(1)">›</div>
+
+            <div class="bottom-bar">
+                <div class="icon-row">
+                    <div id="icon-colors" class="icon-btn" onclick="toggleCustomizer(true)">
+                        <i class="fa-solid fa-palette"></i>
+                        <span class="tooltip">Cores</span>
+                    </div>
+                    <div id="icon-details" class="icon-btn" onclick="toggleDetails(true)">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <span class="tooltip">Detalhes</span>
+                    </div>
+                    <div id="icon-favorite" class="icon-btn">
+                        <i class="fa-solid fa-heart"></i>
+                        <span class="tooltip">Favoritar</span>
+                    </div>
+                    <div id="icon-share" class="icon-btn">
+                        <i class="fa-solid fa-share-alt"></i>
+                        <span class="tooltip">Partilhar</span>
+                    </div>
+                </div>
+                <button id="action-btn" class="action-btn" onclick="handleActionClick()">
+                    <i class="fa-solid fa-box"></i> Embalagem
+                </button>
+            </div>
+        </div>
+
+        <div class="customizer-panel" id="customizer-panel">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-palette"></i> Customizar</h2>
+                <button class="close-panel-btn" onclick="toggleCustomizer(false)">×</button>
+            </div>
+            <div id="config-groups"></div>
+        </div>
+
+        <div class="details-panel" id="details-panel">
+             <div class="panel-header">
+                <h2><i class="fa-solid fa-info-circle"></i> Detalhes</h2>
+                <button class="close-panel-btn" onclick="toggleDetails(false)">×</button>
+            </div>
+            <div id="details-content"></div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="color: white;">A carregar os bolos...</p>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, controls, cakeGroup;
+        let currentCakeIndex = 0;
+        
+        const cakesData = [
+            { id: 1, name: "Bolo de Chocolate com Morango", type: "festa", flavor: "chocolate", price: 85, occasion: "aniversario", rating: 4.8, description: "Delicioso bolo de chocolate com cobertura cremosa e morangos frescos.", model: { baseColor: 0x4B3F38, toppingColor: 0xDC143C } },
+            { id: 2, name: "Red Velvet Clássico", type: "festa", flavor: "red-velvet", price: 75, occasion: "casamento", rating: 4.9, description: "O clássico Red Velvet com cream cheese e um toque especial.", model: { baseColor: 0x9B1C31, toppingColor: 0xFFFFFF } },
+            { id: 3, name: "Bolo de Limão", type: "diet", flavor: "limao", price: 45, occasion: "dia-dia", rating: 4.5, description: "Refrescante bolo de limão com uma cobertura leve e cítrica.", model: { baseColor: 0xF3E5AB, toppingColor: 0x90EE90 } },
+            { id: 4, name: "Bolo Vegano de Baunilha", type: "vegano", flavor: "baunilha", price: 65, occasion: "cha-tarde", rating: 4.6, description: "100% vegano, feito com ingredientes naturais e muito amor.", model: { baseColor: 0xF5DEB3, toppingColor: 0xFAFAD2 } },
+            { id: 5, name: "Bolo Fitness de Morango", type: "fitness", flavor: "morango", price: 55, occasion: "dia-dia", rating: 4.4, description: "Rico em proteínas e baixo em carboidratos. Sabor sem culpa!", model: { baseColor: 0xFFC0CB, toppingColor: 0xFF69B4 } },
+        ];
+
+        const CONFIG_OPTIONS = {
+            flavor: {
+                name: 'Sabor da Massa',
+                options: [ { id: 'chocolate', label: 'Chocolate', color: 0x4B3F38 }, { id: 'vanilla', label: 'Baunilha', color: 0xF3E5AB }, { id: 'redvelvet', label: 'Red Velvet', color: 0x9B1C31 }, { id: 'lemon', label: 'Limão', color: 0xF5DEB3} ]
+            },
+            topping: {
+                name: 'Cobertura',
+                options: [ { id: 'ganache', label: 'Ganache', color: 0x2E2521 }, { id: 'chantilly', label: 'Chantilly', color: 0xFFFFFF }, { id: 'brigadeiro', label: 'Brigadeiro', color: 0x3D2B1F }, { id: 'morango', label: 'Morango', color: 0xFF69B4} ]
+            }
+        };
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.5, 6);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.target.set(0, 1, 0);
+            controls.enablePan = false;
+            controls.minDistance = 4;
+            controls.maxDistance = 10;
+            controls.maxPolarAngle = Math.PI / 1.9;
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 10, 7);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            const platformGeo = new THREE.CylinderGeometry(2.5, 2.6, 0.2, 64);
+            const platformMat = new THREE.MeshStandardMaterial({ color: 0xFADADD, roughness: 0.8 });
+            const platform = new THREE.Mesh(platformGeo, platformMat);
+            platform.receiveShadow = true;
+            scene.add(platform);
+
+            updateCake();
+            initializeConfigurator();
+            animate();
+            
+            setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 1500);
+        }
+
+        function createCake(group, baseColor, toppingColor) {
+            const cakeMaterial = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.6 });
+            const toppingMaterial = new THREE.MeshStandardMaterial({ color: toppingColor, roughness: 0.4 });
+
+            const cakeLayer1 = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.25, 0.8, 64), cakeMaterial);
+            cakeLayer1.castShadow = true; cakeLayer1.receiveShadow = true;
+            group.add(cakeLayer1);
+            
+            const toppingGeo = new THREE.TorusGeometry(1.2, 0.15, 16, 100);
+            const topping = new THREE.Mesh(toppingGeo, toppingMaterial);
+            topping.rotation.x = Math.PI / 2;
+            topping.position.y = 0.35;
+            topping.castShadow = true;
+            group.add(topping);
+        }
+
+        function updateCake() {
+            const cakeData = cakesData[currentCakeIndex];
+            
+            // Fade out header
+            const header = document.getElementById('cake-header');
+            header.style.opacity = 0;
+
+            if (cakeGroup) {
+                scene.remove(cakeGroup);
+            }
+            cakeGroup = new THREE.Group();
+            createCake(cakeGroup, cakeData.model.baseColor, cakeData.model.toppingColor);
+            cakeGroup.position.y = 0.1;
+            scene.add(cakeGroup);
+
+            // Update UI text after a short delay for fade effect
+            setTimeout(() => {
+                document.getElementById('cake-name').textContent = cakeData.name;
+                document.getElementById('cake-description').textContent = cakeData.description;
+                header.style.opacity = 1;
+            }, 500);
+            
+            updateDetailsPanel();
+            updateConfiguratorUI();
+        }
+
+        function navigateCake(direction) {
+            currentCakeIndex += direction;
+            if (currentCakeIndex < 0) {
+                currentCakeIndex = cakesData.length - 1;
+            } else if (currentCakeIndex >= cakesData.length) {
+                currentCakeIndex = 0;
+            }
+            updateCake();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            if (cakeGroup) { cakeGroup.rotation.y += 0.002; }
+            renderer.render(scene, camera);
+        }
+
+        // --- Lógica dos Painéis ---
+        function toggleCustomizer(show) {
+            document.getElementById('customizer-panel').classList.toggle('active', show);
+            updateActionButton(show);
+        }
+
+        function toggleDetails(show) {
+            document.getElementById('details-panel').classList.toggle('active', show);
+        }
+        
+        function updateActionButton(isCustomizing) {
+            const btn = document.getElementById('action-btn');
+            if (isCustomizing) {
+                btn.innerHTML = `<i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho`;
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-box"></i> Embalagem`;
+            }
+        }
+        
+        function handleActionClick() {
+            const isCustomizing = document.getElementById('customizer-panel').classList.contains('active');
+            if (isCustomizing) {
+                // Lógica para adicionar ao carrinho
+                const cake = cakesData[currentCakeIndex];
+                alert(`"${cake.name}" adicionado ao carrinho!`);
+            } else {
+                // Lógica para embalagem
+                alert('Informações sobre a embalagem!');
+            }
+        }
+        
+        // --- Lógica do Painel de Customização ---
+        function initializeConfigurator() {
+            const container = document.getElementById('config-groups');
+            container.innerHTML = '';
+            for (const key in CONFIG_OPTIONS) {
+                const group = CONFIG_OPTIONS[key];
+                let optionsHTML = group.options.map(opt =>
+                    `<button class="config-btn" data-group="${key}" data-id="${opt.id}" data-color="${opt.color}">
+                        ${opt.label}
+                    </button>`
+                ).join('');
+                container.innerHTML += `
+                    <div class="config-group">
+                        <h3>${group.name}</h3>
+                        <div class="config-options">${optionsHTML}</div>
+                    </div>`;
+            }
+            document.querySelectorAll('.config-btn').forEach(btn => btn.addEventListener('click', handleOptionClick));
+        }
+        
+        function handleOptionClick(event) {
+            const btn = event.currentTarget;
+            const groupKey = btn.dataset.group;
+            const newColor = parseInt(btn.dataset.color);
+
+            // Atualiza UI do painel
+            document.querySelectorAll(`.config-btn[data-group="${groupKey}"]`).forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Atualiza cor do bolo 3D
+            const cakePart = groupKey === 'flavor' ? cakeGroup.children[0] : cakeGroup.children[1];
+            cakePart.material.color.set(newColor);
+        }
+
+        function updateConfiguratorUI() {
+            const currentCake = cakesData[currentCakeIndex];
+            
+            // Sabor (massa)
+            const flavorBtns = document.querySelectorAll('.config-btn[data-group="flavor"]');
+            flavorBtns.forEach(b => b.classList.remove('active'));
+            const activeFlavor = Array.from(flavorBtns).find(btn => parseInt(btn.dataset.color) === currentCake.model.baseColor);
+            if(activeFlavor) activeFlavor.classList.add('active');
+            
+            // Cobertura
+            const toppingBtns = document.querySelectorAll('.config-btn[data-group="topping"]');
+            toppingBtns.forEach(b => b.classList.remove('active'));
+            const activeTopping = Array.from(toppingBtns).find(btn => parseInt(btn.dataset.color) === currentCake.model.toppingColor);
+            if(activeTopping) activeTopping.classList.add('active');
+
+        }
+
+
+        // --- Lógica do Painel de Detalhes ---
+        function updateDetailsPanel() {
+            const cake = cakesData[currentCakeIndex];
+            const container = document.getElementById('details-content');
+            container.innerHTML = `
+                <div class="details-group">
+                    <h4>Preço</h4>
+                    <p>R$ ${cake.price.toFixed(2)}</p>
+                </div>
+                <div class="details-group">
+                    <h4>Avaliação</h4>
+                    <p>${'⭐'.repeat(Math.round(cake.rating))} (${cake.rating})</p>
+                </div>
+                <div class="details-group">
+                    <h4>Tipo</h4>
+                    <p>${cake.type.charAt(0).toUpperCase() + cake.type.slice(1)}</p>
+                </div>
+                <div class="details-group">
+                    <h4>Ocasião Ideal</h4>
+                    <p>${cake.occasion.charAt(0).toUpperCase() + cake.occasion.slice(1)}</p>
+                </div>
+            `;
+        }
+
+        // --- Event Listeners ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
