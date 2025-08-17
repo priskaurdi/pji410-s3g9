@@ -1,0 +1,21 @@
+{
+  "name": "pji410-s3g9",
+  "version": "1.0.0",
+  "description": "Projeto Integrador IV - Univesp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/priskaurdi/pji410-s3g9.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/priskaurdi/pji410-s3g9/issues"
+  },
+  "homepage": "https://github.com/priskaurdi/pji410-s3g9#readme"
+}
