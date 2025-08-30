@@ -15,6 +15,7 @@
     "aedes": "^0.51.3",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "winston": "^3.17.0"
   }
 }
