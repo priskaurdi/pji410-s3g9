@@ -11,6 +11,10 @@ const http = require('http');           // Servidor HTTP nativo do Node
 const fs = require('fs');                // Manipulação de arquivos
 const path = require('path');            // Manipulação de caminhos
 const winston = require('winston');      // Logger para salvar logs em arquivo
+const mongoose = require('mongoose');
+const path = require('path');
+const Dados = require(path.join(__dirname, '../models/dados.js'));
+
 
 
 // =========================================
@@ -48,6 +52,22 @@ const mqttPort = 1883; // Porta padrão do MQTT
 app.use(cors()); // Permite acesso de qualquer origem
 // Adiciona o middleware bodyParser para que o Express consiga interpretar corpos de requisição no formato JSON.
 app.use(bodyParser.json()); // Interpreta corpos JSON
+
+// ======================================================
+// Banco de dados
+// ======================================================
+const bdURL = 'mongodb://localhost:27017';
+
+mongoose.connect(bdURL, {useNewUrlParser: true, useUnifiedTopology: true});
+
+const db = mongoose.connection;
+
+db.on('error', console.error.bind(console , 'Erro ao se conectar:'));
+
+db.once('open', ()=>{
+    console.log("Conectado ao banco de dados");
+})
+
 
 // ======================================================
 // SERVIDOR MQTT (Broker)
