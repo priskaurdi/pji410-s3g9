@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gráfico de Temperatura</title>
+    <title>Comunicação com ESP32</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .container{
@@ -32,16 +32,31 @@
     </style>
 </head>
 <body>
-    <h1>Gráfico de Temperatura</h1>
-    <div class="container">
-        <canvas id="grafico" width="400" heigth="200"></canvas>
-        <div class="buttons">
-            <button onclick="paginaanterior()">Anterior</button>
-            <p id="num"></p>
-            <button onclick="proximapagina()">Próximo</button>
-        </div>
+    <div class="comunicacao">
+        <h1>Comunicação com ESP32</h1>
+        <form action="/enviar" method="post">
+            <label for="mensagem">mensagem</label>
+            <input type="text" id="mensagem" name="mensagem" required>
+            <button type="submit">Enviar</button>
+
+            {% if resposta %}
+            <p>Resposta do ESP32: {{resposta}} </p>
+            {% endif %}
+        </form>
     </div>
 
+
+    <div class="grafico">
+        <h1>Gráfico de Temperatura</h1>
+        <div class="container">
+            <canvas id="grafico" width="400" heigth="200"></canvas>
+            <div class="buttons">
+                <button onclick="paginaanterior()">Anterior</button>
+                <p id="num"></p>
+                <button onclick="proximapagina()">Próximo</button>
+            </div>
+        </div>
+    </div>
     <script>
         let paginaAtual = 1;
 
