@@ -6,20 +6,16 @@ Projeto Integrador IV - Univesp
 Esse arquivo define o modelo de dados no MongoDB com Mongoose.
 # ----------------------------------
 // Importa o Mongoose para conectar e manipular MongoDB
-const mongoose = require('mongoose');
-
 // Estrutura dos dados armazenados no banco
-const dadosSchema = new mongoose.Schema({
-    // Valor da temperatura
-    temperature: Number,
-    // Data e hora da leitura (default = agora)
-    timestamp: { type: Date, default: Date.now }
-});
-
+// Valor da temperatura
+// Data e hora da leitura (default = agora)
 // Cria o "modelo" Dados com base no schema
-const Dados = mongoose.model('Dados', dadosSchema);
-
 // Exporta para poder usar no server.js
+
+-------------------------
+const mongoose = require('mongoose');
+const dadosSchema = new mongoose.Schema({ temperature: Number, timestamp: { type: Date, default: Date.now } });
+const Dados = mongoose.model('Dados', dadosSchema);
 module.exports = Dados;
 
 
