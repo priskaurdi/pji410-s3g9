@@ -51,7 +51,12 @@
 
         async function lerdados() {
             try {
-                const resposta = await fetch('http://localhost:3000/dados');
+                // Descomentar quando tiver a pagina correta do armazenamento
+                //const resposta = await fetch('http://localhost:3000/dados');
+
+                // Utilizando arquivo json para testar o grafico no index.html
+                const resposta = await fetch('../temperaturas_100.json');
+
                 const dados = await resposta.json();
                 return dados;
             } catch (error) {

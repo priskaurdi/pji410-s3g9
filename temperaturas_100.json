@@ -1,0 +1,602 @@
+[
+  {
+    "_id": "750e0ae227dcb8c5c50af946",
+    "temperature": 22.4,
+    "timestamp": "2023-12-09T22:39:20.876Z",
+    "__v": 0
+  },
+  {
+    "_id": "5b20d8dad22ed3d2075d894a",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:39:21.695Z",
+    "__v": 0
+  },
+  {
+    "_id": "7ba9e4d9c7d1cf7d0f20696c",
+    "temperature": 22.8,
+    "timestamp": "2023-12-09T22:39:22.454Z",
+    "__v": 0
+  },
+  {
+    "_id": "fdc16bbb24e968d01d0a3dcf",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:39:23.571Z",
+    "__v": 0
+  },
+  {
+    "_id": "4f041efe9bf7f609405a9fd2",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:39:24.719Z",
+    "__v": 0
+  },
+  {
+    "_id": "816cf9d62b9e54e90952f779",
+    "temperature": 22.4,
+    "timestamp": "2023-12-09T22:39:25.353Z",
+    "__v": 0
+  },
+  {
+    "_id": "a057b5c8dd32f01ba3ac98e4",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:39:27.022Z",
+    "__v": 0
+  },
+  {
+    "_id": "da78b09d229097906c9bafb2",
+    "temperature": 22.4,
+    "timestamp": "2023-12-09T22:39:27.497Z",
+    "__v": 0
+  },
+  {
+    "_id": "420581f305908e6f7f7e918c",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:39:28.507Z",
+    "__v": 0
+  },
+  {
+    "_id": "a8f91fd825d8330c1096a70f",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:39:29.808Z",
+    "__v": 0
+  },
+  {
+    "_id": "acdc19b320883d73a5ad8249",
+    "temperature": 22.2,
+    "timestamp": "2023-12-09T22:39:30.756Z",
+    "__v": 0
+  },
+  {
+    "_id": "4301acf7bcd49d68b8dc7197",
+    "temperature": 22.9,
+    "timestamp": "2023-12-09T22:39:31.715Z",
+    "__v": 0
+  },
+  {
+    "_id": "e5d4eb8b29d4cfc217f85fb4",
+    "temperature": 22.2,
+    "timestamp": "2023-12-09T22:39:32.708Z",
+    "__v": 0
+  },
+  {
+    "_id": "0961f169e188ae25d44730a5",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:39:34.086Z",
+    "__v": 0
+  },
+  {
+    "_id": "46866baf08b905e254c23af6",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:39:35.212Z",
+    "__v": 0
+  },
+  {
+    "_id": "ea5ed862e93e3da345003c71",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:39:35.665Z",
+    "__v": 0
+  },
+  {
+    "_id": "dcf79ccad9863b4cb36e4110",
+    "temperature": 22.4,
+    "timestamp": "2023-12-09T22:39:36.543Z",
+    "__v": 0
+  },
+  {
+    "_id": "a1cfd428456287bd0d4153c7",
+    "temperature": 23.2,
+    "timestamp": "2023-12-09T22:39:37.893Z",
+    "__v": 0
+  },
+  {
+    "_id": "642f549a4d03c67310a42a47",
+    "temperature": 22.9,
+    "timestamp": "2023-12-09T22:39:38.847Z",
+    "__v": 0
+  },
+  {
+    "_id": "856fbeebcd4695ec1b871a9e",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:39:39.405Z",
+    "__v": 0
+  },
+  {
+    "_id": "6016dd920fa2aa63e44b62b7",
+    "temperature": 22.9,
+    "timestamp": "2023-12-09T22:39:40.504Z",
+    "__v": 0
+  },
+  {
+    "_id": "f6b74a703b93d1a7f2f5d42d",
+    "temperature": 22.8,
+    "timestamp": "2023-12-09T22:39:42.056Z",
+    "__v": 0
+  },
+  {
+    "_id": "2ffbb293cd103f2174d74731",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:39:42.391Z",
+    "__v": 0
+  },
+  {
+    "_id": "59320993bcc862e32b0eee33",
+    "temperature": 22.4,
+    "timestamp": "2023-12-09T22:39:43.572Z",
+    "__v": 0
+  },
+  {
+    "_id": "44738b963b0871265ce21a6f",
+    "temperature": 22.9,
+    "timestamp": "2023-12-09T22:39:44.327Z",
+    "__v": 0
+  },
+  {
+    "_id": "2ff0a2ee9729fb3645ef12af",
+    "temperature": 23.0,
+    "timestamp": "2023-12-09T22:39:45.719Z",
+    "__v": 0
+  },
+  {
+    "_id": "d37611cadaaea5539743bf27",
+    "temperature": 23.2,
+    "timestamp": "2023-12-09T22:39:47.074Z",
+    "__v": 0
+  },
+  {
+    "_id": "29dc21d0275f7adb29bd931c",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:39:47.372Z",
+    "__v": 0
+  },
+  {
+    "_id": "c6798dea733963f93b8c7d5a",
+    "temperature": 22.4,
+    "timestamp": "2023-12-09T22:39:49.187Z",
+    "__v": 0
+  },
+  {
+    "_id": "bad8be6ce871f22500d27afe",
+    "temperature": 22.2,
+    "timestamp": "2023-12-09T22:39:49.682Z",
+    "__v": 0
+  },
+  {
+    "_id": "67a802a8b752896a00fa63d2",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:39:50.496Z",
+    "__v": 0
+  },
+  {
+    "_id": "98766c78b9b4178a19eb696f",
+    "temperature": 22.8,
+    "timestamp": "2023-12-09T22:39:52.125Z",
+    "__v": 0
+  },
+  {
+    "_id": "e748b4a7b9d714d462f0ee76",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:39:53.066Z",
+    "__v": 0
+  },
+  {
+    "_id": "7f67b87bd98c8ea32037c098",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:39:53.942Z",
+    "__v": 0
+  },
+  {
+    "_id": "1dea3a9089952e90607c4137",
+    "temperature": 23.0,
+    "timestamp": "2023-12-09T22:39:55.189Z",
+    "__v": 0
+  },
+  {
+    "_id": "4abe149823ef2012e45740f0",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:39:55.565Z",
+    "__v": 0
+  },
+  {
+    "_id": "3d2f9b2d7256963d04bf792f",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:39:56.362Z",
+    "__v": 0
+  },
+  {
+    "_id": "4c06180ebfdd0c3cb8b1bec9",
+    "temperature": 22.9,
+    "timestamp": "2023-12-09T22:39:57.889Z",
+    "__v": 0
+  },
+  {
+    "_id": "02c280f008a140be0ba8d2d9",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:39:58.460Z",
+    "__v": 0
+  },
+  {
+    "_id": "73549c040c8885d030e10970",
+    "temperature": 22.3,
+    "timestamp": "2023-12-09T22:39:59.489Z",
+    "__v": 0
+  },
+  {
+    "_id": "9a8b834a8cbb1aff852362f7",
+    "temperature": 23.0,
+    "timestamp": "2023-12-09T22:40:00.545Z",
+    "__v": 0
+  },
+  {
+    "_id": "7957d2941846f994b0ff2159",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:40:02.205Z",
+    "__v": 0
+  },
+  {
+    "_id": "94676c70769171a392d33887",
+    "temperature": 22.4,
+    "timestamp": "2023-12-09T22:40:03.034Z",
+    "__v": 0
+  },
+  {
+    "_id": "17a2608bcba0d959639755ff",
+    "temperature": 22.1,
+    "timestamp": "2023-12-09T22:40:04.032Z",
+    "__v": 0
+  },
+  {
+    "_id": "cd7abeb6712a7c2d0fb9562b",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:40:04.451Z",
+    "__v": 0
+  },
+  {
+    "_id": "7e0ad8d7ffcf255cec5bff58",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:05.432Z",
+    "__v": 0
+  },
+  {
+    "_id": "c64bda2ce48d8f32895a1a0f",
+    "temperature": 23.2,
+    "timestamp": "2023-12-09T22:40:07.020Z",
+    "__v": 0
+  },
+  {
+    "_id": "f1b30e51ec6d157b960e2cf8",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:07.417Z",
+    "__v": 0
+  },
+  {
+    "_id": "a88f414f78f984730728c180",
+    "temperature": 22.8,
+    "timestamp": "2023-12-09T22:40:09.001Z",
+    "__v": 0
+  },
+  {
+    "_id": "98ebd54cffc23a4bbde08d0a",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:09.432Z",
+    "__v": 0
+  },
+  {
+    "_id": "add5e7eb6e636c8f63c94759",
+    "temperature": 22.0,
+    "timestamp": "2023-12-09T22:40:10.942Z",
+    "__v": 0
+  },
+  {
+    "_id": "a9faa2fcc8083b8a22a6b6d4",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:40:11.577Z",
+    "__v": 0
+  },
+  {
+    "_id": "2170b1dcbfc446d7510c2dcb",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:40:12.470Z",
+    "__v": 0
+  },
+  {
+    "_id": "f67ab08d840c65ffed6fcfea",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:13.820Z",
+    "__v": 0
+  },
+  {
+    "_id": "337e00e0e432fb20b06d4f46",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:14.366Z",
+    "__v": 0
+  },
+  {
+    "_id": "274400a2338a9f3b57487200",
+    "temperature": 22.9,
+    "timestamp": "2023-12-09T22:40:15.966Z",
+    "__v": 0
+  },
+  {
+    "_id": "380b9cb65e8f7d64672a612a",
+    "temperature": 22.3,
+    "timestamp": "2023-12-09T22:40:16.560Z",
+    "__v": 0
+  },
+  {
+    "_id": "984d9227655539e73b2e3f56",
+    "temperature": 22.2,
+    "timestamp": "2023-12-09T22:40:17.734Z",
+    "__v": 0
+  },
+  {
+    "_id": "a00900fdab51f552bd4a9690",
+    "temperature": 22.3,
+    "timestamp": "2023-12-09T22:40:18.665Z",
+    "__v": 0
+  },
+  {
+    "_id": "77dd494da04c97f6d14546e5",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:40:19.585Z",
+    "__v": 0
+  },
+  {
+    "_id": "7e69b5cc3589e721de29ea43",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:40:20.422Z",
+    "__v": 0
+  },
+  {
+    "_id": "035b85476378089f4c84be81",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:21.754Z",
+    "__v": 0
+  },
+  {
+    "_id": "71aa838fa8c42cc0662b0ff8",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:23.131Z",
+    "__v": 0
+  },
+  {
+    "_id": "2f6079a3f1463b78f8e9d494",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:40:23.567Z",
+    "__v": 0
+  },
+  {
+    "_id": "2512185f465b4c5abe4b2258",
+    "temperature": 22.8,
+    "timestamp": "2023-12-09T22:40:24.788Z",
+    "__v": 0
+  },
+  {
+    "_id": "bdc40acfcc9b52144dee650c",
+    "temperature": 22.8,
+    "timestamp": "2023-12-09T22:40:25.382Z",
+    "__v": 0
+  },
+  {
+    "_id": "0e65bce495c2210228a8c7f6",
+    "temperature": 23.0,
+    "timestamp": "2023-12-09T22:40:26.360Z",
+    "__v": 0
+  },
+  {
+    "_id": "4a3927d057e691a0765f17db",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:28.136Z",
+    "__v": 0
+  },
+  {
+    "_id": "13c40e726ed934b43c4bb017",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:40:29.199Z",
+    "__v": 0
+  },
+  {
+    "_id": "3b93f2b66005fc360951b40e",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:29.843Z",
+    "__v": 0
+  },
+  {
+    "_id": "69b17f66568cfedfbf2faacc",
+    "temperature": 22.8,
+    "timestamp": "2023-12-09T22:40:30.549Z",
+    "__v": 0
+  },
+  {
+    "_id": "f1c0d1edf4ddc5f8166d260a",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:40:32.108Z",
+    "__v": 0
+  },
+  {
+    "_id": "64234501ac42512833442773",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:32.600Z",
+    "__v": 0
+  },
+  {
+    "_id": "e524cd6a07b973f9570b72c8",
+    "temperature": 22.1,
+    "timestamp": "2023-12-09T22:40:33.681Z",
+    "__v": 0
+  },
+  {
+    "_id": "f9acc7291bbc63d25f8bad21",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:35.191Z",
+    "__v": 0
+  },
+  {
+    "_id": "d844da2868a81a9cf5af2128",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:40:35.522Z",
+    "__v": 0
+  },
+  {
+    "_id": "f5c73adf0cc1d4528da47b84",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:36.389Z",
+    "__v": 0
+  },
+  {
+    "_id": "3063b91fb3fc31a0bc1282e9",
+    "temperature": 22.3,
+    "timestamp": "2023-12-09T22:40:37.541Z",
+    "__v": 0
+  },
+  {
+    "_id": "f2620a70d657e2ba5f5d1350",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:40:38.534Z",
+    "__v": 0
+  },
+  {
+    "_id": "4c964e54dcab0d3c46378d00",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:39.669Z",
+    "__v": 0
+  },
+  {
+    "_id": "6426f06d0b2b391aa0509dd9",
+    "temperature": 23.0,
+    "timestamp": "2023-12-09T22:40:41.144Z",
+    "__v": 0
+  },
+  {
+    "_id": "84a41dd0159a5fc4b8887e78",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:40:41.367Z",
+    "__v": 0
+  },
+  {
+    "_id": "eeb5ece83bed96b7f65cc6b8",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:40:42.991Z",
+    "__v": 0
+  },
+  {
+    "_id": "0075a2adc0957b90c63333ee",
+    "temperature": 22.8,
+    "timestamp": "2023-12-09T22:40:44.089Z",
+    "__v": 0
+  },
+  {
+    "_id": "a16a9e17048576e5667e5c03",
+    "temperature": 22.1,
+    "timestamp": "2023-12-09T22:40:44.694Z",
+    "__v": 0
+  },
+  {
+    "_id": "b7a12ae740c8a79f286f3af1",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:45.630Z",
+    "__v": 0
+  },
+  {
+    "_id": "a054d68db599ce9350506069",
+    "temperature": 23.0,
+    "timestamp": "2023-12-09T22:40:47.122Z",
+    "__v": 0
+  },
+  {
+    "_id": "7e1ac91410984d52abdcbad9",
+    "temperature": 22.8,
+    "timestamp": "2023-12-09T22:40:47.532Z",
+    "__v": 0
+  },
+  {
+    "_id": "342ae0aadbe526bc094c8436",
+    "temperature": 22.9,
+    "timestamp": "2023-12-09T22:40:48.497Z",
+    "__v": 0
+  },
+  {
+    "_id": "1ceb33d5540488424dd5b66d",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:40:50.080Z",
+    "__v": 0
+  },
+  {
+    "_id": "30262a6bd3f3a0edfb6b78cc",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:40:50.671Z",
+    "__v": 0
+  },
+  {
+    "_id": "448661f4132ac14143fc2a98",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:40:51.482Z",
+    "__v": 0
+  },
+  {
+    "_id": "687ffcf44d43581c78874254",
+    "temperature": 22.8,
+    "timestamp": "2023-12-09T22:40:52.581Z",
+    "__v": 0
+  },
+  {
+    "_id": "84d174ae943c76293c1a691b",
+    "temperature": 22.5,
+    "timestamp": "2023-12-09T22:40:53.810Z",
+    "__v": 0
+  },
+  {
+    "_id": "1a90eec2a1876da5c3fdda92",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:40:55.209Z",
+    "__v": 0
+  },
+  {
+    "_id": "603bacb2976f417121cc8db8",
+    "temperature": 22.9,
+    "timestamp": "2023-12-09T22:40:56.178Z",
+    "__v": 0
+  },
+  {
+    "_id": "ed3b7b69b49280f71a7527a8",
+    "temperature": 22.6,
+    "timestamp": "2023-12-09T22:40:57.045Z",
+    "__v": 0
+  },
+  {
+    "_id": "2814774acc44eaee07591d14",
+    "temperature": 22.4,
+    "timestamp": "2023-12-09T22:40:58.040Z",
+    "__v": 0
+  },
+  {
+    "_id": "2e03bbadebabc4a5b485bd9a",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:40:59.107Z",
+    "__v": 0
+  },
+  {
+    "_id": "2d7f63074d4257e11daa5307",
+    "temperature": 22.7,
+    "timestamp": "2023-12-09T22:40:59.425Z",
+    "__v": 0
+  }
+]
