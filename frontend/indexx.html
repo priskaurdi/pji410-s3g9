@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Temperatura</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .container{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .buttons{
+            display: flex;
+            align-items: center;
+            width: 200px;
+            justify-content: space-around;
+            gap: 10px;
+        }
+        .buttons button{
+            background-color: blue;
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            width: 80px;
+        }
+        .buttons p{
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gráfico de Temperatura</h1>
+    <div class="container">
+        <canvas id="grafico" width="400" heigth="200"></canvas>
+        <div class="buttons">
+            <button onclick="paginaanterior()">Anterior</button>
+            <p id="num"></p>
+            <button onclick="proximapagina()">Próximo</button>
+        </div>
+    </div>
+
+    <script>
+        let paginaAtual = 1;
+
+        let meuGrafico ; // variável para armazenar o Gráfico
+
+        const numpagina = document.getElementById('num');
+
+        async function lerdados() {
+            try {
+                const resposta = await fetch('http://localhost:3000/dados');
+                const dados = await resposta.json();
+                return dados;
+            } catch (error) {
+
+            }
+        }
+
+        async function criarGrafico(pagina) {
+            const data = await lerdados();
+            numpagina.innerText = pagina;
+            console.log(data);
+
+            if(meuGrafico){
+                meuGrafico.destroy();
+            }
+
+            const itemporpagina = 20;
+
+            const startIndex = (pagina - 1) * itemporpagina;
+            const endIndex = startIndex + itemporpagina;
+
+            const dadosporPagina = data.slice(startIndex, endIndex);
+
+            const timestamps = dadosporPagina.map(item=>{
+                const date = new Date(item.timestamp);
+                return date.toDateString('pt-BR', {dateStyle:'short', timeStyle:'short'})
+            })
+
+            
+            const temperaturas = dadosporPagina.map(item=>item.temperature);
+
+            const ctx = document.getElementById('grafico');
+
+            meuGrafico = new Chart ( ctx, {
+                type:'line',
+                data:{
+                    labels:timestamps,
+                    datasets:[{
+                        label:'Temperatura',
+                        data:temperaturas,
+                        borderWidth:2,
+                    }]
+                }, 
+                options:{
+                    scales:{
+                        y:{
+                            beginAtZero:true,
+                        }
+                    }
+                }
+            })
+        }
+
+    function proximapagina() {
+        paginaAtual++;
+        criarGrafico(paginaAtual)
+    }
+
+    function paginaanterior() {
+        if(paginaAtual>1){
+            paginaAtual--;
+            criarGrafico(paginaAtual)
+        }
+    }
+
+
+
+    criarGrafico(1);
+
+
+
+
+
+    </script>
+</body>
+</html>

@@ -12,8 +12,7 @@ const fs = require('fs');                // Manipulação de arquivos
 const path = require('path');            // Manipulação de caminhos
 const winston = require('winston');      // Logger para salvar logs em arquivo
 const mongoose = require('mongoose');
-const path = require('path');
-const Dados = require(path.join(__dirname, '../models/dados.js'));
+const Dados = require('./models/dados.js');
 
 
 
@@ -54,19 +53,41 @@ app.use(cors()); // Permite acesso de qualquer origem
 app.use(bodyParser.json()); // Interpreta corpos JSON
 
 // ======================================================
-// Banco de dados
+// Banco de dados - API
 // ======================================================
 const bdURL = 'mongodb://localhost:27017';
 
-mongoose.connect(bdURL, {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect(bdURL).then(
+()=>{ console.log('Conectado ao banco de dados')}).catch((error)=>{
+    console.log(error);
+});
 
-const db = mongoose.connection;
+app.post('/dados',  async (req, res) => {
+try {
+    const {temperature} = request.body
+    const novoDado = new Dados({temperature});
+    await novoDado.save()
 
-db.on('error', console.error.bind(console , 'Erro ao se conectar:'));
+    console.log("Dados Salvos")
+    return res.sendStatus(201).send({message: "Dados Salvos", temperature:temperature});
 
-db.once('open', ()=>{
-    console.log("Conectado ao banco de dados");
-})
+}   catch (error) {
+    return res.sendStatus(500).send({message: "Erro ao salvar", error:error.message});
+}
+});
+
+app.get('/dados',  async (req, res) => {
+try {
+    const dados = await Dados.find();
+    return res.status(200).json(dados);
+
+}   catch (error) {
+    return res.sendStatus(500);
+}
+});
+
+
+
 
 
 // ======================================================
@@ -206,6 +227,6 @@ app.get('/sensor', (req, res) => {
 // INICIALIZAÇÃO DO SERVIDOR HTTP
 // ======================================================
 app.listen(port, () => {
-    logger.info(`Servidor HTTP rodando na porta ${httpPort}`);
+    logger.info(`Servidor HTTP rodando na porta ${port}`);
     console.log(`🌐 Servidor HTTP rodando na porta ${port}`);
 });
