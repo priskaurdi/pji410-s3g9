@@ -36,14 +36,21 @@ Recebe e envia mensagens do ESP32 via MQTT.
 Salva e lê os dados do banco.
 
 ### Principais trechos:
-Trecho	                                O que faz
-Logger com Winston	                    Salva logs no arquivo logs/server.log e mostra no console.
-mongoose.connect(...)	                  Conecta no banco MongoDB.
-app.post('/dados')	                    Endpoint para salvar uma leitura manualmente.
-app.get('/dados')	                      Retorna todas as leituras armazenadas no banco.
-Broker MQTT (aedes)	                    Cria um servidor na porta 1883 que vai receber dados do ESP32.
-/send	                                  Permite publicar mensagens HTTP → MQTT (útil para teste).
-/status e /sensor	                      Endpoints fictícios para teste.
+Trecho e O que faz
+- Logger com Winston
+  Salva logs no arquivo logs/server.log e mostra no console.
+- mongoose.connect(...)
+  Conecta no banco MongoDB.
+- app.post('/dados')
+  Endpoint para salvar uma leitura manualmente.
+- app.get('/dados')
+  Retorna todas as leituras armazenadas no banco.
+- Broker MQTT (aedes)
+  Cria um servidor na porta 1883 que vai receber dados do ESP32.
+- /send
+  Permite publicar mensagens HTTP → MQTT (útil para teste).
+- /status e /sensor
+  Endpoints fictícios para teste.
 
 
 # ----------------------------------
