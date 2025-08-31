@@ -1,62 +1,161 @@
-# pji410-s3g9
-Projeto Integrador IV - Univesp
+# PJI410-S3G9 – Projeto Integrador IV (UNIVESP)
 
-# ----------------------------------
-# models/dados.js
-Esse arquivo define o modelo de dados no MongoDB com Mongoose.
-# ----------------------------------
-// Importa o Mongoose para conectar e manipular MongoDB
-// Estrutura dos dados armazenados no banco
-// Valor da temperatura
-// Data e hora da leitura (default = agora)
-// Cria o "modelo" Dados com base no schema
-// Exporta para poder usar no server.js
+Este projeto integra **IoT (ESP32)**, **Node.js com Express e MQTT**, **MongoDB** e **um frontend simples** para visualização das leituras de temperatura.
 
--------------------------
-const mongoose = require('mongoose');
-const dadosSchema = new mongoose.Schema({ temperature: Number, timestamp: { type: Date, default: Date.now } });
-const Dados = mongoose.model('Dados', dadosSchema);
-module.exports = Dados;
+Ele permite:
+- Receber dados do sensor via MQTT.
+- Armazenar leituras em um banco MongoDB.
+- Exibir gráficos e histórico dos dados no frontend.
 
+---
 
-# ----------------------------------
-# server.js
-Esse arquivo é o coração do backend.
-# ----------------------------------
+## **1. Pré-requisitos**
 
-Ele tem três responsabilidades:
-## 1. API REST com Express: 
-Fornece endpoints (/dados, /send, etc.) para comunicação com o frontend e outros serviços.
+Certifique-se de ter instalado:
+- [Node.js](https://nodejs.org/) (v18 ou superior)
+- [MongoDB Community](https://www.mongodb.com/try/download/community) (local ou em nuvem)
+- [Git](https://git-scm.com/)
+- [http-server](https://www.npmjs.com/package/http-server) (para rodar o frontend)
+  ```bash
+  npm install -g http-server
 
-## 2. Broker MQTT com Aedes:
-Recebe e envia mensagens do ESP32 via MQTT.
+## **2. Clonando o repositório**
+git clone https://github.com/priskaurdi/pji410-s3g9.git
+cd pji410-s3g9
 
-## 3. Conexão com MongoDB:
-Salva e lê os dados do banco.
+## **3. Criando um branch para trabalhar**
+Antes de iniciar alterações, crie seu branch:
+git checkout -b nome-da-sua-branch
 
-### Principais trechos:
-Trecho e O que faz
-- Logger com Winston
-  Salva logs no arquivo logs/server.log e mostra no console.
-- mongoose.connect(...)
-  Conecta no banco MongoDB.
-- app.post('/dados')
-  Endpoint para salvar uma leitura manualmente.
-- app.get('/dados')
-  Retorna todas as leituras armazenadas no banco.
-- Broker MQTT (aedes)
-  Cria um servidor na porta 1883 que vai receber dados do ESP32.
-- /send
-  Permite publicar mensagens HTTP → MQTT (útil para teste).
-- /status e /sensor
-  Endpoints fictícios para teste.
+Exemplo:
+git checkout -b feature/ajuste-grafico
 
+## **4. Configurando o backend**
+Vá para a pasta raiz do projeto:
+cd pji410-s3g9
 
-# ----------------------------------
-# frontend/index.html
-Esse é o frontend simples que:
-# ----------------------------------
+Instale as dependências:
+npm install
 
-- Busca dados do backend (/dados)
-- Mostra um gráfico usando Chart.js
-- Permite navegar paginando as leituras (20 por vez).
+Configure a URL do MongoDB:
+Crie um arquivo .env na raiz com:
+
+MONGO_URI=mongodb://localhost:27017/pji410
+PORT=3000
+
+Inicie o servidor backend:
+node server.js
+
+Se tudo estiver certo, o console mostrará:
+Servidor rodando em http://localhost:3000
+Broker MQTT ativo na porta 1883
+Conectado ao MongoDB
+
+## **5. Rodando o frontend**
+
+Vá para a pasta do frontend:
+cd frontend
+
+Inicie o servidor local:
+http-server
+
+Acesse no navegador:
+http://127.0.0.1:8080
+
+## **6. Usando o MQTT (para testes)**
+O broker MQTT está disponível em:
+
+mqtt://localhost:1883
+
+Para publicar dados manualmente:
+
+mosquitto_pub -h localhost -p 1883 -t "sensor/temperatura" -m "25.5"
+
+Para verificar mensagens:
+
+mosquitto_sub -h localhost -p 1883 -t "sensor/temperatura"
+
+## **7. Fluxo de trabalho com Git**
+Sempre que fizer alterações:
+
+Verifique em qual branch está:
+
+git branch
+
+Adicione e comite suas alterações:
+
+git add .
+git commit -m "Descrição das alterações"
+
+Envie para o repositório remoto:
+
+git push origin nome-da-sua-branch
+
+Crie um Pull Request no GitHub para revisar e integrar suas mudanças.
+
+## **8. Estrutura de Pastas**
+pji410-s3g9/
+├── frontend/            # Frontend simples com Chart.js
+│   └── index.html
+├── models/              # Schemas do MongoDB
+│   └── dados.js
+├── server.js            # Backend (API + MQTT Broker)
+├── .env.example         # Exemplo de configuração
+├── package.json
+└── README.md
+
+## **9. Troubleshooting**
+Problemas comuns
+Erro	-----------------  Possível solução
+MongoNetworkError	-----  Verifique se o MongoDB está rodando na porta correta.
+EADDRINUSE	-----------  A porta já está em uso. Mude no .env ou encerre processos ocupando a porta.
+Frontend 404 no JSON	-  Certifique-se de que o arquivo JSON está dentro da pasta frontend ou ajuste o caminho no fetch.
+
+## **10. Tecnologias**
+
+Backend: Node.js, Express, MQTT (Aedes), Mongoose
+Banco de Dados: MongoDB
+Frontend: HTML, JavaScript, Chart.js
+Controle de Versão: Git + GitHub
+
+## **11. Contribuição**
+Crie uma branch (git checkout -b feature/nome-da-feature)
+Commit suas alterações (git commit -m "mensagem descritiva")
+Envie para o remoto (git push origin feature/nome-da-feature)
+Abra um Pull Request para análise.
+
+## **12. Licença**
+Este projeto é de uso educacional, parte do Projeto Integrador IV – UNIVESP.
+
+## **13. .gitignore**
+Crie o arquivo .gitignore, conforme o exemplo abaixo:
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+
+# Logs
+logs/
+*.log
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Ambiente e credenciais
+.env
+
+# Build do frontend (se houver)
+dist/
+build/
+
+# Arquivos temporários
+*.tmp
+*.swp
+
+# IDEs
+.vscode/
+.idea/
